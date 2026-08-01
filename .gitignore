@@ -4,3 +4,11 @@ target
 # Local settings
 .soroban
 .stellar
+
+# Frontend output and local environment
+node_modules
+dist
+.env
+.env.local
+.vercel
+*.tsbuildinfo
