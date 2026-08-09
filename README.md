@@ -10,6 +10,22 @@ Starpost Signals is a real-time, multi-wallet poll built on Stellar Testnet. Con
 ![Starpost Signals live poll](docs/screenshots/live-app.png)
 
 ## Submission checklists
+### Level 1 — White Belt foundation
+
+Level 1 was completed in the companion [StarPost payment dApp](https://github.com/EkinOnat/starpost-stellar-dapp). Its evidence is linked here so reviewers can verify the foundation separately from this Level 2 contract project.
+
+- [x] React and TypeScript frontend
+- [x] Freighter wallet connection and disconnect
+- [x] Stellar Testnet network verification
+- [x] Connected address and native XLM balance displayed
+- [x] Friendbot funding for eligible Testnet accounts
+- [x] Native XLM payment built with the Stellar SDK and signed through Freighter
+- [x] Signing, submitting, success, and failure feedback visible
+- [x] Missing wallet, wrong network, rejected signature, invalid input, insufficient balance, and network errors handled
+- [x] Confirmed transaction hash displayed with a Stellar Explorer link
+- [x] Wallet-connected and successful-transaction screenshots included
+- [x] Public repository, setup instructions, meaningful commit history, and [live Level 1 demo](https://starpost-ekin.ekinonat10.chatgpt.site) available
+- [x] Verified Level 1 Testnet payment: [`c968c65f…1e33d2f`](https://stellar.expert/explorer/testnet/tx/c968c65f7b981f774223e221dac2652727bb8cd66d1ec33c6ae3aa8061e33d2f)
 
 ### Level 2 — Yellow Belt
 
@@ -27,23 +43,6 @@ Starpost Signals is a real-time, multi-wallet poll built on Stellar Testnet. Con
 - [x] Wallet-options screenshot included
 - [x] Deployed contract address linked to Stellar Explorer
 - [x] Successful frontend contract-call transaction hash linked to Stellar Explorer
-
-### Level 1 — White Belt foundation
-
-Level 1 was completed in the companion [StarPost payment dApp](https://github.com/EkinOnat/starpost-stellar-dapp). Its evidence is linked here so reviewers can verify the foundation separately from this Level 2 contract project.
-
-- [x] React and TypeScript frontend
-- [x] Freighter wallet connection and disconnect
-- [x] Stellar Testnet network verification
-- [x] Connected address and native XLM balance displayed
-- [x] Friendbot funding for eligible Testnet accounts
-- [x] Native XLM payment built with the Stellar SDK and signed through Freighter
-- [x] Signing, submitting, success, and failure feedback visible
-- [x] Missing wallet, wrong network, rejected signature, invalid input, insufficient balance, and network errors handled
-- [x] Confirmed transaction hash displayed with a Stellar Explorer link
-- [x] Wallet-connected and successful-transaction screenshots included
-- [x] Public repository, setup instructions, meaningful commit history, and [live Level 1 demo](https://starpost-ekin.ekinonat10.chatgpt.site) available
-- [x] Verified Level 1 Testnet payment: [`c968c65f…1e33d2f`](https://stellar.expert/explorer/testnet/tx/c968c65f7b981f774223e221dac2652727bb8cd66d1ec33c6ae3aa8061e33d2f)
 
 ## Level 2 requirements
 
