@@ -9,6 +9,42 @@ Starpost Signals is a real-time, multi-wallet poll built on Stellar Testnet. Con
 
 ![Starpost Signals live poll](docs/screenshots/live-app.png)
 
+## Submission checklists
+
+### Level 2 — Yellow Belt
+
+- [x] StellarWalletsKit multi-wallet integration with Freighter, xBull, Albedo, and LOBSTR
+- [x] Wallet unavailable, rejected request, and insufficient Testnet XLM errors handled
+- [x] Wrong network, duplicate vote, and RPC/submission errors also handled
+- [x] Soroban smart contract deployed on Stellar Testnet
+- [x] Contract read and write functions called from the frontend
+- [x] Contract state read with `get_results` and updated with `vote`
+- [x] `VoteCast` contract events polled and synchronized without a page reload
+- [x] Simulating, awaiting signature, pending, success, and failure states visible
+- [x] Public GitHub repository with more than two meaningful commits
+- [x] README includes setup instructions and Testnet safety notes
+- [x] Live deployed application linked
+- [x] Wallet-options screenshot included
+- [x] Deployed contract address linked to Stellar Explorer
+- [x] Successful frontend contract-call transaction hash linked to Stellar Explorer
+
+### Level 1 — White Belt foundation
+
+Level 1 was completed in the companion [StarPost payment dApp](https://github.com/EkinOnat/starpost-stellar-dapp). Its evidence is linked here so reviewers can verify the foundation separately from this Level 2 contract project.
+
+- [x] React and TypeScript frontend
+- [x] Freighter wallet connection and disconnect
+- [x] Stellar Testnet network verification
+- [x] Connected address and native XLM balance displayed
+- [x] Friendbot funding for eligible Testnet accounts
+- [x] Native XLM payment built with the Stellar SDK and signed through Freighter
+- [x] Signing, submitting, success, and failure feedback visible
+- [x] Missing wallet, wrong network, rejected signature, invalid input, insufficient balance, and network errors handled
+- [x] Confirmed transaction hash displayed with a Stellar Explorer link
+- [x] Wallet-connected and successful-transaction screenshots included
+- [x] Public repository, setup instructions, meaningful commit history, and [live Level 1 demo](https://starpost-ekin.ekinonat10.chatgpt.site) available
+- [x] Verified Level 1 Testnet payment: [`c968c65f…1e33d2f`](https://stellar.expert/explorer/testnet/tx/c968c65f7b981f774223e221dac2652727bb8cd66d1ec33c6ae3aa8061e33d2f)
+
 ## Level 2 requirements
 
 | Requirement | Implementation |
@@ -20,7 +56,7 @@ Starpost Signals is a real-time, multi-wallet poll built on Stellar Testnet. Con
 | Read and write contract data | Results are read from instance storage; votes update counts and persistent per-voter storage |
 | Real-time synchronization | Contract events are polled every five seconds, deduplicated by event ID, displayed in the activity feed, and trigger result refreshes |
 | Transaction status | Simulating, awaiting signature, pending, success, and failure are visible in the UI |
-| Meaningful commits | Contract/tests, frontend/integration, and release evidence are separate commits |
+| Meaningful commits | Contract/tests, frontend/integration, release evidence, release hardening, and documentation are separate commits |
 | Vercel deployment | Production build is deployed at the live app link above |
 
 ## Wallet options
@@ -35,7 +71,7 @@ The built-in StellarWalletsKit picker reports whether each wallet is available a
 - Contract initialization call: [`6cd54416243f0cfd8afaadc261390bf1c5b0fd77af02b833aa8822adc42eff00`](https://stellar.expert/explorer/testnet/tx/6cd54416243f0cfd8afaadc261390bf1c5b0fd77af02b833aa8822adc42eff00)
 - Verified `vote` call and emitted `VoteCast` event: [`b48752993b42bee828c55b8d8c4720f4e8b5ee62ee08083bcc2151ffffb259c3`](https://stellar.expert/explorer/testnet/tx/b48752993b42bee828c55b8d8c4720f4e8b5ee62ee08083bcc2151ffffb259c3)
 
-The verification vote selected `Climate`, returned `{ option: 2, option_total: 1, total: 1 }`, and is visible in the app's live contract-event feed.
+The verification vote selected `Climate` and returned `{ option: 2, option_total: 1, total: 1 }`. The linked transaction is permanent Explorer proof; the in-app activity feed intentionally shows only events available in the Stellar RPC provider's recent event window.
 
 ## Features
 
