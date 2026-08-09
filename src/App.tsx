@@ -61,6 +61,7 @@ function App() {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<FriendlyError | null>(null);
   const [events, setEvents] = useState<VoteEvent[]>([]);
+  const [eventStatus, setEventStatus] = useState<"syncing" | "synced" | "retrying">("syncing");
   const [isConnecting, setIsConnecting] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -86,6 +87,7 @@ function App() {
       try {
         const page = await fetchVoteEvents(cursor);
         cursor = page.cursor;
+        if (active) setEventStatus("synced");
         if (!active || page.events.length === 0) return;
 
         setEvents((current) => {
@@ -97,6 +99,7 @@ function App() {
         });
         await refreshResults();
       } catch {
+        if (active) setEventStatus("retrying");
         // The next polling cycle retries. Voting remains available if event RPC is delayed.
       }
     };
@@ -249,7 +252,7 @@ function App() {
                     </span>
                     <span className="option-result">
                       <strong>{percentages[index]}%</strong>
-                      <small>{poll.counts[index] ?? 0} votes</small>
+                      <small>{poll.counts[index] ?? 0} {(poll.counts[index] ?? 0) === 1 ? "vote" : "votes"}</small>
                     </span>
                     <span className="result-bar" style={{ width: `${percentages[index]}%` }} />
                   </button>
@@ -302,7 +305,10 @@ function App() {
           </article>
 
           <aside className="signal-card">
-            <div className="card-kicker"><span>02 / LIVE ORBIT</span><span className="live-label"><i /> SYNCED</span></div>
+            <div className="card-kicker">
+              <span>02 / LIVE ORBIT</span>
+              <span className="live-label"><i /> {eventStatus.toUpperCase()}</span>
+            </div>
             <div className="orbit" aria-label="Live poll visualization">
               <div className="orbit-ring ring-one" />
               <div className="orbit-ring ring-two" />

@@ -148,8 +148,23 @@ export async function fetchVoteEvents(cursor?: string) {
   };
 }
 
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error !== "object" || error === null) return String(error);
+
+  const record = error as Record<string, unknown>;
+  if (typeof record.message === "string") return record.message;
+  if (typeof record.error === "string") return record.error;
+  if (typeof record.error === "object" && record.error !== null) {
+    const nested = record.error as Record<string, unknown>;
+    if (typeof nested.message === "string") return nested.message;
+  }
+
+  return String(error);
+}
+
 export function friendlyError(error: unknown): FriendlyError {
-  const raw = error instanceof Error ? error.message : String(error);
+  const raw = errorMessage(error);
   const message = raw.toLowerCase();
 
   if (raw === "WRONG_NETWORK" || message.includes("network passphrase")) {
@@ -172,6 +187,7 @@ export function friendlyError(error: unknown): FriendlyError {
     message.includes("reject") ||
     message.includes("denied") ||
     message.includes("cancel") ||
+    message.includes("closed") ||
     message.includes("no wallet selected")
   ) {
     return {
