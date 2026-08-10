@@ -7,7 +7,6 @@ function defaultDeadline() {
   const value = new Date(Date.now() + 14 * 86_400_000);
   return value.toISOString().slice(0, 16);
 }
-
 const INITIAL: CreateGrantInput = {
   category: "Payments",
   title: "",
@@ -91,4 +90,3 @@ export function CreateGrantDialog({
     </div>
   );
 }
-

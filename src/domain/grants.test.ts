@@ -38,7 +38,6 @@ describe("grant validation", () => {
   it("requires two to five milestones", () => expect(validateGrant({ ...valid, milestones: [valid.milestones[0]] })).toContain("Use between two and five milestones."));
   it("rejects unsafe voting thresholds", () => expect(validateGrant({ ...valid, approvalBps: 4000, quorumBps: 500 })).toHaveLength(2));
 });
-
 describe("event reducer", () => {
   it("creates a materialized grant from GrantCreated", () => {
     const state = reduceActivity({ grants: [], events: [] }, event({ grantId: 9, category: "Gaming", title: "Open worlds", amount: 500 }));
@@ -62,4 +61,3 @@ describe("event reducer", () => {
     expect(state.grants.find((grant) => grant.id === 1)?.status).toBe("failed");
   });
 });
-

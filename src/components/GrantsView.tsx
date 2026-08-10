@@ -15,7 +15,6 @@ import { CreateGrantDialog } from "./CreateGrantDialog";
 function short(value: string) {
   return value.length > 18 ? `${value.slice(0, 7)}...${value.slice(-5)}` : value;
 }
-
 function daysRemaining(deadline: string) {
   const days = Math.ceil((new Date(deadline).getTime() - Date.now()) / 86_400_000);
   return days > 0 ? `${days} days left` : "Funding ended";
@@ -92,4 +91,3 @@ export function GrantsView({
     </div>
   );
 }
-

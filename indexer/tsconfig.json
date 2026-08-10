@@ -13,4 +13,3 @@
   "include": ["src/**/*.ts", "../src/domain/grants.ts"],
   "exclude": ["**/*.test.ts"]
 }
-

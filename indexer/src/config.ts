@@ -7,7 +7,6 @@ function contractId(name: string, fallback = "") {
   if (value && !/^C[A-Z2-7]{55}$/.test(value)) throw new Error(`${name} must be a Stellar contract address`);
   return value;
 }
-
 function positiveInteger(name: string, fallback: number) {
   const value = Number(process.env[name] ?? fallback);
   if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer`);
@@ -33,4 +32,3 @@ export function loadConfig() {
     rateLimitPerMinute: positiveInteger("RATE_LIMIT_PER_MINUTE", 120),
   };
 }
-

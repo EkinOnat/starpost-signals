@@ -38,4 +38,3 @@
 - The Registry does not judge off-chain milestone evidence; contributors make that decision.
 - A paused contract temporarily blocks financial mutations. Reads and Explorer evidence remain available.
 - A lost or expired persistent entry after its extended TTL would require an operational migration; regular activity and maintenance should extend TTL before that point.
-

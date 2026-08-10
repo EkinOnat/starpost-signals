@@ -44,4 +44,3 @@ The milestone-finalization invocation is the strongest composition proof: one Re
 The indexer polls all configured contracts with one RPC filter, persists the latest cursor and a materialized event/grant snapshot, and rejects duplicate event IDs. `/api/stream` broadcasts SSE frames and 15-second heartbeats. The browser fetches `/api/grants` and `/api/events`, applies live frames through the same pure reducer, and falls back to bounded direct RPC polling if the service is unavailable.
 
 Confirmed user transactions trigger immediate snapshot reconciliation. Submitted transactions are never shown as successful before RPC returns `SUCCESS`, and the transaction hash survives pending, timeout, and failure states.
-

@@ -26,4 +26,3 @@ jobs:
             target/wasm32v1-none/release/*.wasm
             wasm-sha256.txt
             deployments/testnet.json
-

@@ -14,4 +14,3 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY --from=build /app/dist-indexer ./dist-indexer
 EXPOSE 8787
 CMD ["node", "dist-indexer/indexer/src/main.js"]
-

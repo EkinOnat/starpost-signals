@@ -14,7 +14,6 @@ function json(response: ServerResponse, status: number, body: unknown) {
   response.setHeader("Content-Type", "application/json; charset=utf-8");
   response.end(JSON.stringify(body));
 }
-
 export function createIndexerServer(options: ServerOptions) {
   const clients = new Set<ServerResponse>();
   const rates = new Map<string, { count: number; resetAt: number }>();
@@ -89,4 +88,3 @@ export function createIndexerServer(options: ServerOptions) {
     clientCount: () => clients.size,
   };
 }
-

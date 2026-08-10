@@ -20,4 +20,3 @@ describe("TransactionDrawer", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Check status");
   });
 });
-

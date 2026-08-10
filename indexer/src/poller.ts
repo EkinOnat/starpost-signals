@@ -25,7 +25,6 @@ export class StellarActivitySource implements ActivitySource {
     };
   }
 }
-
 export type IndexerLogger = (entry: Record<string, unknown>) => void;
 
 export class EventIndexer {
@@ -86,4 +85,3 @@ export class EventIndexer {
     return { failures: this.failures, lastLedger: this.lastLedger };
   }
 }
-

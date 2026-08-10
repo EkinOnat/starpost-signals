@@ -69,4 +69,3 @@ jobs:
             testnet-deployment.json
             target/wasm32v1-none/release/grant_registry.wasm
             target/wasm32v1-none/release/grant_escrow.wasm
-

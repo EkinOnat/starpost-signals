@@ -28,4 +28,3 @@ The service retries with bounded exponential backoff. The browser reports `retry
 - Testnet Registry/Escrow addresses and proof transactions are recorded.
 - Frontend and indexer CORS/environment settings point to the production origins.
 - Production smoke test covers Signals read/write, contribution, live activity, and Explorer links.
-
