@@ -113,7 +113,7 @@ export function SignalsView({
                   <button type="button" onClick={() => setSelected(index)} aria-pressed={selected === index}>
                     <span className="option-symbol">{detail.symbol}</span>
                     <span><small>{String(index + 1).padStart(2, "0")} · {detail.code}</small><strong>{option}</strong><em>{detail.description}</em></span>
-                    <span className="option-total"><strong>{percentages[index]}%</strong><small>{poll.counts[index] ?? 0} votes</small></span>
+                    <span className="option-total"><strong>{percentages[index]}%</strong><small>{poll.counts[index] ?? 0} {(poll.counts[index] ?? 0) === 1 ? "vote" : "votes"}</small></span>
                     <i style={{ width: `${percentages[index]}%` }} />
                   </button>
                   <button className="fund-category" type="button" onClick={() => onGrantCategory(option)}>Fund this signal →</button>

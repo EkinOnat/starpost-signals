@@ -27,9 +27,16 @@ Starpost Signals is a production-style community coordination dApp on Stellar Te
 
 ### Level 1
 
-- [x] Stellar Testnet account and XLM interaction
-- [x] Wallet connection and balance display
-- [x] Public deployment and evidence
+Level 1 was completed in the companion [StarPost payment dApp](https://github.com/EkinOnat/starpost-stellar-dapp), with its foundation evidence kept separate from this contract project.
+
+- [x] React and TypeScript frontend
+- [x] Freighter connection, disconnect, address, and native XLM balance
+- [x] Stellar Testnet verification and Friendbot funding
+- [x] Native XLM payment built with the Stellar SDK and signed through Freighter
+- [x] Signing, submission, confirmation, failure feedback, and Explorer link
+- [x] Missing wallet, wrong network, rejection, invalid input, insufficient balance, and network errors
+- [x] Public repository and [live Level 1 demo](https://starpost-ekin.ekinonat10.chatgpt.site)
+- [x] Verified payment [`c968c65f...1e33d2f`](https://stellar.expert/explorer/testnet/tx/c968c65f7b981f774223e221dac2652727bb8cd66d1ec33c6ae3aa8061e33d2f)
 
 ### Level 2
 
@@ -39,6 +46,7 @@ Starpost Signals is a production-style community coordination dApp on Stellar Te
 - [x] `VoteCast` activity synchronization
 - [x] Wallet, network, balance, duplicate-vote, rejection, and RPC errors
 - [x] Confirmed transaction state and Explorer proof
+- [x] Public deployment, setup instructions, screenshots, and meaningful commit history
 
 ### Level 3 implementation
 
