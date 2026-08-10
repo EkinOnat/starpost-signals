@@ -1,0 +1,24 @@
+{
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "signalsContractId": "CBHWJQ6Q4FAKCTC5IOS5YJDB2AOP5EF4SE6ODOLACCZZ2B3GV34J3YIP",
+  "registryContractId": "CCLUIBA3E7CILJOQYPYLV46W67U5HHR5PVQP4UEC6KTCYHWGZ5OFICHQ",
+  "escrowContractId": "CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK",
+  "nativeAssetContractId": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+  "registryWasmSha256": "eac1ff7e0fb4201f070f0a90b64ef40dfec8dc403cae26b30555a883b5971c81",
+  "escrowWasmSha256": "e83be6d9f39addda57fb187f62a239f8acdb2f2e3e48cc862722e567a6674aa1",
+  "deployedAt": "2026-08-10T00:29:01Z",
+  "transactions": {
+    "registryWasmUpload": "3de41f549f033ae183a2e78e19183159c1149741a839ba63cfefff95a190e109",
+    "registryDeploy": "9c13dffe4f868650af1ef1c164bb5a7d6d332a03474a50c9fb608d7ae06bebe9",
+    "escrowWasmUpload": "85fb31421c3fe53a980746811f9188a1bf8c11262f843f57c0e8326e0f66764f",
+    "escrowDeploy": "df42e3c4e34bc5677c1a472b2e03ba462a99a4bd37a336df62d3c290da276d4c",
+    "escrowInitialize": "9a5f04dfbf8e04c44f7802bd3c5cbddd2fd7974316384fb8226bdd15cb8c5483",
+    "initialize": "c8ed33236ee1e62b274b92c2a87748bb71907e2f63a9775c04f9e325579f9882",
+    "createGrant": "1fd1b361fe850e16e30f59ac7d24a68bac895d05690703ac5ce2bc953c7aeeda",
+    "contribute": "6a914ce0a7760f8a681727af6af8a55beebde601d61fac23821418fc15f01e6e",
+    "finalizeFunding": "b8fba3f20cee98293c7e0535260ff8ac6cfd051476f02a4bf88e82dfa1565c5e",
+    "milestoneVote": "78574ff884785cdba0b6c974b6b913670ed27293bc7e3f938ab22bec07cd3258",
+    "milestoneRelease": "891832eefe0bf51d49f1278fa84cb7ea66b986118f173d96b505031fc290efac"
+  }
+}
