@@ -784,6 +784,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "grant-escrow"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
+name = "grant-registry"
+version = "0.1.0"
+dependencies = [
+ "grant-escrow",
+ "signals",
+ "soroban-sdk",
+]
+
+[[package]]
 name = "group"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
