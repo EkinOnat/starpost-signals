@@ -4,10 +4,15 @@ target
 # Local settings
 .soroban
 .stellar
+.stellar-level3
 
 # Frontend output and local environment
 node_modules
 dist
+dist-indexer
+playwright-report
+test-results
+.data
 .env
 .env.local
 .vercel

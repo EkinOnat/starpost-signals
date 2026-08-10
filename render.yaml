@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: starpost-signals-indexer
+    runtime: docker
+    dockerfilePath: ./Dockerfile.indexer
+    healthCheckPath: /health
+    envVars:
+      - key: STELLAR_RPC_URL
+        value: https://soroban-testnet.stellar.org
+      - key: SIGNALS_CONTRACT_ID
+        value: CBHWJQ6Q4FAKCTC5IOS5YJDB2AOP5EF4SE6ODOLACCZZ2B3GV34J3YIP
+      - key: REGISTRY_CONTRACT_ID
+        value: CCLUIBA3E7CILJOQYPYLV46W67U5HHR5PVQP4UEC6KTCYHWGZ5OFICHQ
+      - key: ESCROW_CONTRACT_ID
+        value: CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK
+      - key: INDEXER_DATA_FILE
+        value: /var/data/indexer-state.json
+      - key: CORS_ORIGINS
+        value: https://starpost-signals.vercel.app
+    disk:
+      name: starpost-indexer-data
+      mountPath: /var/data
+      sizeGB: 1
