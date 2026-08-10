@@ -30,7 +30,7 @@ jobs:
       - run: stellar contract build
       - name: Record reproducible hashes
         run: sha256sum target/wasm32v1-none/release/*.wasm | tee wasm-sha256.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: level3-contracts
           path: |
