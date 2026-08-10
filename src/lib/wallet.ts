@@ -8,6 +8,8 @@ import { LobstrModule } from "@creit.tech/stellar-wallets-kit/modules/lobstr";
 import { xBullModule } from "@creit.tech/stellar-wallets-kit/modules/xbull";
 import { NETWORK_PASSPHRASE } from "../config";
 
+const E2E_ADDRESS = "GDR3XZ6CFDXHBU65A47HRWXYWDYX6TEN543RXWJ7D2MOHUXDUCT34FTR";
+
 export const walletChoices = [
   { name: "Freighter", note: "Browser extension" },
   { name: "xBull", note: "Extension + mobile" },
@@ -30,6 +32,9 @@ StellarWalletsKit.init({
 });
 
 export async function connectWallet() {
+  if (import.meta.env.MODE === "e2e") {
+    return { address: E2E_ADDRESS, walletName: "Mock Freighter" };
+  }
   const { address } = await StellarWalletsKit.authModal();
   const network = await StellarWalletsKit.getNetwork();
 
@@ -45,6 +50,7 @@ export async function connectWallet() {
 }
 
 export async function disconnectWallet() {
+  if (import.meta.env.MODE === "e2e") return;
   await StellarWalletsKit.disconnect();
 }
 

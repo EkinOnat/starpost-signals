@@ -1,5 +1,4 @@
 import {
-  Address,
   BASE_FEE,
   Contract,
   Horizon,
@@ -16,7 +15,7 @@ import {
   RPC_URL,
 } from "../config";
 import type { FriendlyError, PollResults, TransactionStage, VoteEvent } from "../types";
-import { signTransaction } from "./wallet";
+import { sc, submitContractCall } from "./transaction";
 
 const rpcServer = new rpc.Server(RPC_URL);
 const horizonServer = new Horizon.Server(HORIZON_URL);
@@ -33,6 +32,14 @@ function buildCall(source: Awaited<ReturnType<typeof rpcServer.getAccount>>, met
 }
 
 export async function readResults(): Promise<PollResults> {
+  if (import.meta.env.MODE === "e2e") {
+    return {
+      question: "What should Stellar build next?",
+      options: ["Payments", "Identity", "Climate", "Gaming"],
+      counts: [12, 8, 17, 6],
+      total: 43,
+    };
+  }
   const source = await rpcServer.getAccount(READ_ONLY_SOURCE);
   const simulation = await rpcServer.simulateTransaction(buildCall(source, "get_results"));
 
@@ -54,6 +61,7 @@ export async function readResults(): Promise<PollResults> {
 }
 
 export async function readXlmBalance(address: string): Promise<number> {
+  if (import.meta.env.MODE === "e2e") return 5_000;
   const account = await horizonServer.loadAccount(address);
   const native = account.balances.find((balance) => balance.asset_type === "native");
   return native ? Number(native.balance) : 0;
@@ -64,40 +72,14 @@ export async function submitVote(
   option: number,
   onStage: (stage: TransactionStage) => void,
 ): Promise<string> {
-  onStage("simulating");
-  const balance = await readXlmBalance(address);
-  if (balance < 1.5) {
-    throw new Error("INSUFFICIENT_BALANCE");
-  }
-
-  const account = await rpcServer.getAccount(address);
-  const transaction = buildCall(
-    account,
-    "vote",
-    new Address(address).toScVal(),
-    nativeToScVal(option, { type: "u32" }),
-  );
-  const prepared = await rpcServer.prepareTransaction(transaction);
-
-  onStage("awaiting_signature");
-  const { signedTxXdr } = await signTransaction(prepared.toXDR(), address);
-  const signed = TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
-
-  onStage("pending");
-  const submitted = await rpcServer.sendTransaction(signed);
-  if (submitted.status === "ERROR") {
-    throw new Error(`Transaction submission failed: ${submitted.status}`);
-  }
-
-  const result = await rpcServer.pollTransaction(submitted.hash, {
-    attempts: 20,
-    sleepStrategy: () => 1_000,
+  return submitContractCall({
+    address,
+    contractId: CONTRACT_ID,
+    method: "vote",
+    label: "Cast signal",
+    args: [sc.address(address), sc.u32(option)],
+    onUpdate: ({ stage }) => onStage(stage),
   });
-  if (result.status !== rpc.Api.GetTransactionStatus.SUCCESS) {
-    throw new Error(`Transaction finished with status ${result.status}`);
-  }
-
-  return submitted.hash;
 }
 
 function shortAddress(address: string) {
@@ -183,6 +165,22 @@ export function friendlyError(error: unknown): FriendlyError {
     };
   }
 
+  if (raw === "GRANTS_NOT_DEPLOYED") {
+    return {
+      code: "GRANTS_NOT_DEPLOYED",
+      title: "Grant contracts pending deployment",
+      message: "Discovery is available in preview mode. Add the Registry and Escrow Testnet addresses to enable wallet actions.",
+    };
+  }
+
+  if (raw === "PENDING_TIMEOUT" || message.includes("pending_timeout")) {
+    return {
+      code: "PENDING_TIMEOUT",
+      title: "Confirmation is taking longer",
+      message: "The transaction may still confirm. Use the preserved Explorer link to check its neutral pending status.",
+    };
+  }
+
   if (
     message.includes("reject") ||
     message.includes("denied") ||
@@ -205,6 +203,62 @@ export function friendlyError(error: unknown): FriendlyError {
     };
   }
 
+  if (message.includes("#13") || message.includes("duplicate milestone")) {
+    return {
+      code: "DUPLICATE_VOTE",
+      title: "Milestone vote already cast",
+      message: "This contributor has already voted on the current milestone.",
+    };
+  }
+
+  if (message.includes("no voting power") || message.includes("novotingpower")) {
+    return {
+      code: "NO_VOTING_POWER",
+      title: "No contributor voting power",
+      message: "Only contributors can vote, and voting weight matches the XLM contributed to this grant.",
+    };
+  }
+
+  if (message.includes("quorum")) {
+    return {
+      code: "QUORUM_NOT_MET",
+      title: "Quorum not reached",
+      message: "More contributor voting weight is required before this milestone can be finalized.",
+    };
+  }
+
+  if (message.includes("approval")) {
+    return {
+      code: "APPROVAL_NOT_MET",
+      title: "Approval threshold not reached",
+      message: "The current weighted yes vote is below this grant's approval threshold.",
+    };
+  }
+
+  if (message.includes("refund") || message.includes("alreadyrefunded")) {
+    return {
+      code: "REFUND_UNAVAILABLE",
+      title: "Refund unavailable",
+      message: "This contribution is not refundable yet, has already been claimed, or belongs to another account.",
+    };
+  }
+
+  if (message.includes("paused")) {
+    return {
+      code: "CONTRACT_PAUSED",
+      title: "Contract temporarily paused",
+      message: "Financial changes are paused by the contract administrator. Reads and Explorer proof remain available.",
+    };
+  }
+
+  if (message.includes("goal") || message.includes("milestone") || message.includes("deadline")) {
+    return {
+      code: "INVALID_GRANT",
+      title: "Grant details are invalid",
+      message: "Check the goal, future deadline, milestone total, and threshold values before trying again.",
+    };
+  }
+
   if (message.includes("wallet") || message.includes("extension") || message.includes("not found")) {
     return {
       code: "WALLET_UNAVAILABLE",
@@ -215,7 +269,7 @@ export function friendlyError(error: unknown): FriendlyError {
 
   return {
     code: "NETWORK_ERROR",
-    title: "The signal did not land",
-    message: "The Stellar RPC request failed. Your vote was not confirmed; check the status and try again.",
+    title: "The transaction did not land",
+    message: "The Stellar RPC request failed. Nothing is marked successful without final confirmation; check the status and retry.",
   };
 }

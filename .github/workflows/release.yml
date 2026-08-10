@@ -1,0 +1,28 @@
+name: Release contracts
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+      - uses: stellar/stellar-cli@v26.1.0
+      - run: cargo test --workspace
+      - run: stellar contract build
+      - run: sha256sum target/wasm32v1-none/release/*.wasm > wasm-sha256.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            target/wasm32v1-none/release/*.wasm
+            wasm-sha256.txt
+            deployments/testnet.json

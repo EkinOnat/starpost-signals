@@ -1,0 +1,71 @@
+name: Deploy Level 3 contracts
+
+on:
+  workflow_dispatch:
+    inputs:
+      signals_contract_id:
+        description: Existing Level 2 Signals contract
+        required: true
+        default: CBHWJQ6Q4FAKCTC5IOS5YJDB2AOP5EF4SE6ODOLACCZZ2B3GV34J3YIP
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: testnet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+          components: rustfmt, clippy
+      - uses: stellar/stellar-cli@v26.1.0
+      - run: cargo test --workspace
+      - run: stellar contract build
+      - name: Configure protected deployer
+        shell: bash
+        env:
+          TESTNET_DEPLOYER_SECRET: ${{ secrets.TESTNET_DEPLOYER_SECRET }}
+        run: |
+          printf '%s\n' "$TESTNET_DEPLOYER_SECRET" | stellar keys add level3-deployer
+      - name: Deploy and initialize Registry and Escrow
+        id: contracts
+        shell: bash
+        env:
+          SIGNALS_ID: ${{ inputs.signals_contract_id }}
+        run: |
+          ADMIN="$(stellar keys address level3-deployer)"
+          REGISTRY_ID="$(stellar contract deploy --wasm target/wasm32v1-none/release/grant_registry.wasm --source level3-deployer --network testnet)"
+          ESCROW_ID="$(stellar contract deploy --wasm target/wasm32v1-none/release/grant_escrow.wasm --source level3-deployer --network testnet)"
+          stellar contract invoke --id "$ESCROW_ID" --source level3-deployer --network testnet -- initialize --admin "$ADMIN" --registry "$REGISTRY_ID"
+          stellar contract invoke --id "$REGISTRY_ID" --source level3-deployer --network testnet -- initialize --admin "$ADMIN" --signals "$SIGNALS_ID" --escrow "$ESCROW_ID"
+          stellar contract invoke --id "$REGISTRY_ID" --source level3-deployer --network testnet -- set_paused --paused false
+          echo "registry_id=$REGISTRY_ID" >> "$GITHUB_OUTPUT"
+          echo "escrow_id=$ESCROW_ID" >> "$GITHUB_OUTPUT"
+      - name: Create deployment artifact
+        shell: bash
+        env:
+          SIGNALS_ID: ${{ inputs.signals_contract_id }}
+          REGISTRY_ID: ${{ steps.contracts.outputs.registry_id }}
+          ESCROW_ID: ${{ steps.contracts.outputs.escrow_id }}
+        run: |
+          REGISTRY_SHA="$(sha256sum target/wasm32v1-none/release/grant_registry.wasm | cut -d' ' -f1)"
+          ESCROW_SHA="$(sha256sum target/wasm32v1-none/release/grant_escrow.wasm | cut -d' ' -f1)"
+          jq -n \
+            --arg signals "$SIGNALS_ID" --arg registry "$REGISTRY_ID" --arg escrow "$ESCROW_ID" \
+            --arg registrySha "$REGISTRY_SHA" --arg escrowSha "$ESCROW_SHA" --arg deployedAt "$(date -u +%FT%TZ)" \
+            '{network:"testnet",networkPassphrase:"Test SDF Network ; September 2015",signalsContractId:$signals,registryContractId:$registry,escrowContractId:$escrow,nativeAssetContractId:"CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",registryWasmSha256:$registrySha,escrowWasmSha256:$escrowSha,deployedAt:$deployedAt,transactions:{}}' > testnet-deployment.json
+          {
+            echo "## Level 3 Testnet deployment"
+            echo "- Registry: https://stellar.expert/explorer/testnet/contract/$REGISTRY_ID"
+            echo "- Escrow: https://stellar.expert/explorer/testnet/contract/$ESCROW_ID"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: testnet-deployment
+          path: |
+            testnet-deployment.json
+            target/wasm32v1-none/release/grant_registry.wasm
+            target/wasm32v1-none/release/grant_escrow.wasm

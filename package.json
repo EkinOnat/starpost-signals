@@ -6,7 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "tsc -b --pretty false",
+    "build:indexer": "tsc -p indexer/tsconfig.json",
+    "typecheck": "tsc -b --pretty false && tsc -p indexer/tsconfig.json --pretty false",
+    "lint": "npm run typecheck",
+    "test": "vitest run",
+    "test:frontend": "vitest run src",
+    "test:indexer": "vitest run indexer",
+    "test:e2e": "playwright test",
+    "indexer": "tsx indexer/src/main.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,11 +22,22 @@
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
+  "overrides": {
+    "axios": "1.19.0",
+    "protobufjs": "7.6.5",
+    "uuid": "11.1.1"
+  },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@testing-library/jest-dom": "7.0.0",
+    "@testing-library/react": "16.3.2",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.0.5",
+    "jsdom": "26.1.0",
+    "tsx": "4.23.11",
     "typescript": "5.9.3",
-    "vite": "8.2.0"
+    "vite": "8.2.0",
+    "vitest": "4.1.10"
   }
 }
