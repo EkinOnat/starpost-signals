@@ -63,7 +63,8 @@ Level 1 was completed in the companion [StarPost payment dApp](https://github.co
 - [x] Registry and Escrow Testnet deployment and nested-call proof hash
 - [x] Production frontend redeployment and final mobile screenshot
 - [ ] Public indexer deployment
-- [ ] Green hosted CI screenshot and public demo video
+- [ ] Green hosted CI screenshot
+- [x] Public Level 3 demo video
 
 Items that need deployed credentials or hosted-service access stay unchecked until their public evidence exists.
 
@@ -267,6 +268,6 @@ The demonstration grant is active with 100 XLM deposited and milestone 1 release
 
 This is Testnet software: do not send real XLM. No secret key is committed, bundled, or passed to the browser. The contracts have extensive automated invariant coverage but no independent audit. The indexer is not trusted for financial state transitions; Stellar contracts remain the source of truth. See the [threat model](docs/THREAT_MODEL.md) for the full control and residual-risk list.
 
-## Demo storyboard
+## Level 3 demo video
 
-The planned 90-second recording covers navigation, the preserved poll and wallet picker, mobile Grants discovery, contribution state progression, a second-tab event update, weighted milestone approval/release, Explorer proof, and the green CI/test evidence. The final public URL will be added here when recorded.
+Watch the [silent Starpost Signals Level 3 demo on YouTube](https://youtu.be/Frz0deHSgyU). It demonstrates the preserved Signals poll, milestone-based grant creation, the wallet-signed transaction lifecycle, Registry and Escrow events, and successful Stellar Testnet Explorer proof.
