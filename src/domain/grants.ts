@@ -148,7 +148,7 @@ function sortEvents(events: ActivityEvent[]) {
   return [...events]
     .filter((event, index, list) => list.findIndex((item) => item.id === event.id) === index)
     .sort((a, b) => b.ledger - a.ledger)
-    .slice(0, 200);
+    .slice(0, 2_000);
 }
 
 export function reduceActivity(state: GrantState, event: ActivityEvent): GrantState {
@@ -232,7 +232,9 @@ export function applyActivitySnapshot(
   grants: GrantView[],
   events: ActivityEvent[],
 ): GrantState {
-  return events.reduce(reduceActivity, { grants, events: [] });
+  // The indexer snapshot is already materialized from these events. Replaying
+  // them here would double-count weighted votes and other additive fields.
+  return { grants: structuredClone(grants), events: sortEvents(events) };
 }
 
 export type CreateGrantInput = {

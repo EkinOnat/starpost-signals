@@ -1,0 +1,73 @@
+name: Deploy Impact V1 contracts
+
+on:
+  workflow_dispatch:
+    inputs:
+      signals_contract_id:
+        description: Preserved Signals contract
+        required: true
+        default: CBHWJQ6Q4FAKCTC5IOS5YJDB2AOP5EF4SE6ODOLACCZZ2B3GV34J3YIP
+      pause_guardian_address:
+        description: Independent Testnet pause guardian public address
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: testnet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+          components: rustfmt, clippy
+      - uses: stellar/stellar-cli@v27.1.0
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - run: stellar contract build
+      - name: Configure protected deployer
+        shell: bash
+        env:
+          TESTNET_DEPLOYER_SECRET: ${{ secrets.TESTNET_DEPLOYER_SECRET }}
+        run: printf '%s\n' "$TESTNET_DEPLOYER_SECRET" | stellar keys add impact-v1-deployer --secret-key
+      - name: Deploy and initialize V1 contracts
+        id: contracts
+        shell: bash
+        env:
+          SIGNALS_ID: ${{ inputs.signals_contract_id }}
+          GUARDIAN: ${{ inputs.pause_guardian_address }}
+          XLM_ASSET: CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+        run: |
+          GOVERNOR="$(stellar keys address impact-v1-deployer)"
+          REGISTRY_ID="$(stellar contract deploy --wasm target/wasm32v1-none/release/impact_registry_v1.wasm --source impact-v1-deployer --network testnet)"
+          ESCROW_ID="$(stellar contract deploy --wasm target/wasm32v1-none/release/impact_escrow_v1.wasm --source impact-v1-deployer --network testnet)"
+          ESCROW_POLICY='{"decimals":7,"enabled_for_new_vaults":true,"max_goal":"10000000000000","min_contribution":"1000000"}'
+          REGISTRY_POLICY='{"decimals":7,"enabled_for_new_projects":true,"max_goal":"10000000000000","min_contribution":"1000000"}'
+          PROTOCOL_POLICY='{"activation_window":604800,"approval_bps":6000,"arbitration_window":604800,"arbitrator_count":3,"arbitrator_threshold":2,"dispute_bps":2000,"max_attempts":2,"max_contribution_bps":5000,"max_funding_window":2592000,"max_vote_power_bps":2500,"min_contributors":2,"quorum_bps":5000,"review_start_grace":259200,"review_window":604800,"reviewer_count":3,"reviewer_threshold":2,"rework_window":1209600,"vote_start_grace":259200,"voting_window":604800}'
+          stellar contract invoke --id "$ESCROW_ID" --source impact-v1-deployer --network testnet -- initialize --governor "$GOVERNOR" --pause-guardian "$GUARDIAN" --registry "$REGISTRY_ID" --initial-asset "$XLM_ASSET" --initial-policy "$ESCROW_POLICY"
+          stellar contract invoke --id "$REGISTRY_ID" --source impact-v1-deployer --network testnet -- initialize --governor "$GOVERNOR" --pause-guardian "$GUARDIAN" --signals "$SIGNALS_ID" --escrow "$ESCROW_ID" --initial-asset "$XLM_ASSET" --initial-asset-policy "$REGISTRY_POLICY" --standard-policy "$PROTOCOL_POLICY"
+          test "$(stellar contract invoke --id "$REGISTRY_ID" --source impact-v1-deployer --network testnet --send=no -- version)" = "1"
+          test "$(stellar contract invoke --id "$ESCROW_ID" --source impact-v1-deployer --network testnet --send=no -- version)" = "1"
+          echo "registry_id=$REGISTRY_ID" >> "$GITHUB_OUTPUT"
+          echo "escrow_id=$ESCROW_ID" >> "$GITHUB_OUTPUT"
+      - name: Create deployment manifest
+        shell: bash
+        env:
+          SIGNALS_ID: ${{ inputs.signals_contract_id }}
+          GUARDIAN: ${{ inputs.pause_guardian_address }}
+          REGISTRY_ID: ${{ steps.contracts.outputs.registry_id }}
+          ESCROW_ID: ${{ steps.contracts.outputs.escrow_id }}
+        run: |
+          GOVERNOR="$(stellar keys address impact-v1-deployer)"
+          jq -n --arg signals "$SIGNALS_ID" --arg registry "$REGISTRY_ID" --arg escrow "$ESCROW_ID" --arg governor "$GOVERNOR" --arg guardian "$GUARDIAN" --arg registrySha "$(sha256sum target/wasm32v1-none/release/impact_registry_v1.wasm | cut -d' ' -f1)" --arg escrowSha "$(sha256sum target/wasm32v1-none/release/impact_escrow_v1.wasm | cut -d' ' -f1)" --arg deployedAt "$(date -u +%FT%TZ)" '{schemaVersion:1,network:"testnet",signalsContractId:$signals,impactRegistryContractId:$registry,impactEscrowContractId:$escrow,governor:$governor,pauseGuardian:$guardian,registryWasmSha256:$registrySha,escrowWasmSha256:$escrowSha,deployedAt:$deployedAt}' > impact-v1-testnet-deployment.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impact-v1-testnet-deployment
+          path: |
+            impact-v1-testnet-deployment.json
+            target/wasm32v1-none/release/impact_registry_v1.wasm
+            target/wasm32v1-none/release/impact_escrow_v1.wasm

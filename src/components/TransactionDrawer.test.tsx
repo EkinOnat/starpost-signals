@@ -12,7 +12,7 @@ describe("TransactionDrawer", () => {
     for (const label of ["Validate", "Simulate", "Sign", "Submit", "Confirm"]) expect(screen.getByText(label)).toBeVisible();
   });
   it("links a confirmed hash to Testnet Explorer", () => {
-    render(<TransactionDrawer transaction={{ stage: "success", hash: "deadbeef", label: "Create grant", error: null }} onDismiss={vi.fn()} />);
+    render(<TransactionDrawer transaction={{ stage: "confirmed", hash: "deadbeef", label: "Create grant", error: null }} onDismiss={vi.fn()} />);
     expect(screen.getByRole("link", { name: /check transaction/i })).toHaveAttribute("href", expect.stringContaining("deadbeef"));
   });
   it("renders a neutral pending-timeout recovery state", () => {

@@ -23,8 +23,9 @@ export type TransactionStage =
   | "awaiting_signature"
   | "submitted"
   | "pending"
-  | "success"
-  | "failed";
+  | "confirmed"
+  | "failed"
+  | "timed_out";
 
 export type TransactionState = {
   stage: TransactionStage;
@@ -48,6 +49,18 @@ export type AppErrorCode =
   | "APPROVAL_NOT_MET"
   | "REFUND_UNAVAILABLE"
   | "CONTRACT_PAUSED"
+  | "UNSUPPORTED_ASSET"
+  | "UNAUTHORIZED_REVIEWER"
+  | "DUPLICATE_ATTESTATION"
+  | "EVIDENCE_UPLOAD_FAILED"
+  | "EVIDENCE_HASH_MISMATCH"
+  | "INVALID_EVIDENCE_FILE"
+  | "DISPUTED_MILESTONE"
+  | "UNAUTHORIZED_RELEASE"
+  | "DUPLICATE_REFUND"
+  | "INDEXER_OFFLINE"
+  | "STALE_INDEXED_DATA"
+  | "IMPACT_NOT_DEPLOYED"
   | "PENDING_TIMEOUT"
   | "GRANTS_NOT_DEPLOYED"
   | "NETWORK_ERROR";

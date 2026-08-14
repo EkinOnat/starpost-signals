@@ -16,8 +16,9 @@ const ORDER: TransactionStage[] = [
   "awaiting_signature",
   "submitted",
   "pending",
-  "success",
+  "confirmed",
   "failed",
+  "timed_out",
 ];
 
 export function TransactionDrawer({
@@ -44,9 +45,9 @@ export function TransactionDrawer({
         {STEPS.map((step, index) => (
           <span
             key={step.stage}
-            className={current >= index + 1 && transaction.stage !== "failed" ? "is-complete" : ""}
+            className={current >= index + 1 && transaction.stage !== "failed" && transaction.stage !== "timed_out" ? "is-complete" : ""}
           >
-            <i>{current > index + 1 || transaction.stage === "success" ? "✓" : index + 1}</i>
+            <i>{current > index + 1 || transaction.stage === "confirmed" ? "✓" : index + 1}</i>
             {step.label}
           </span>
         ))}
@@ -57,7 +58,7 @@ export function TransactionDrawer({
           <p>{transaction.error.message}</p>
         </div>
       )}
-      {transaction.stage === "success" && (
+      {transaction.stage === "confirmed" && (
         <p className="transaction-success">Confirmed by Stellar RPC. Contract state is syncing now.</p>
       )}
       {transaction.hash && (

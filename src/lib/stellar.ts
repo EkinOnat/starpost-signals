@@ -10,6 +10,8 @@ import {
 import {
   CONTRACT_ID,
   HORIZON_URL,
+  IMPACT_ESCROW_CONTRACT_ID,
+  IMPACT_REGISTRY_CONTRACT_ID,
   NETWORK_PASSPHRASE,
   READ_ONLY_SOURCE,
   RPC_URL,
@@ -148,6 +150,14 @@ function errorMessage(error: unknown): string {
 export function friendlyError(error: unknown): FriendlyError {
   const raw = errorMessage(error);
   const message = raw.toLowerCase();
+  const contractCode = Number(message.match(/#(\d+)/)?.[1] ?? 0);
+  const signalsError = Boolean(CONTRACT_ID && message.includes(CONTRACT_ID.toLowerCase()));
+  const impactRegistryError = Boolean(
+    IMPACT_REGISTRY_CONTRACT_ID && message.includes(IMPACT_REGISTRY_CONTRACT_ID.toLowerCase()),
+  );
+  const impactEscrowError = Boolean(
+    IMPACT_ESCROW_CONTRACT_ID && message.includes(IMPACT_ESCROW_CONTRACT_ID.toLowerCase()),
+  );
 
   if (raw === "WRONG_NETWORK" || message.includes("network passphrase")) {
     return {
@@ -157,11 +167,35 @@ export function friendlyError(error: unknown): FriendlyError {
     };
   }
 
-  if (raw === "INSUFFICIENT_BALANCE" || message.includes("insufficient") || message.includes("underfunded")) {
+  if (raw === "WALLET_ACCOUNT_CHANGED") {
+    return {
+      code: "WALLET_UNAVAILABLE",
+      title: "Wallet account changed",
+      message: "The active wallet account changed before signing. Review the new account, then start the action again.",
+    };
+  }
+
+  if (raw === "INSUFFICIENT_BALANCE" || raw === "INSUFFICIENT_SPENDABLE_BALANCE" || message.includes("insufficient") || message.includes("underfunded")) {
     return {
       code: "INSUFFICIENT_BALANCE",
       title: "Not enough Testnet XLM",
       message: "Keep at least 1.5 XLM available for the account reserve and contract transaction fee, then try again.",
+    };
+  }
+
+  if (raw === "IMPACT_NOT_DEPLOYED") {
+    return {
+      code: "IMPACT_NOT_DEPLOYED",
+      title: "Proof-to-Payout is not deployed",
+      message: "Public Signals and Level 3 grants remain available. Configure the versioned Impact Registry and Escrow Testnet addresses to enable Level 4 actions.",
+    };
+  }
+
+  if (raw === "DUPLICATE_ACTION_PENDING") {
+    return {
+      code: "NETWORK_ERROR",
+      title: "Action already in progress",
+      message: "Wait for the current wallet request or transaction hash to finish before trying this action again.",
     };
   }
 
@@ -181,6 +215,40 @@ export function friendlyError(error: unknown): FriendlyError {
     };
   }
 
+  if (raw === "INVALID_EVIDENCE_FILE") {
+    return { code: "INVALID_EVIDENCE_FILE", title: "Evidence file is not accepted", message: "Use a non-empty PDF, JPEG, PNG, WebP, text, CSV, or JSON file no larger than 20 MB." };
+  }
+  if (raw === "EVIDENCE_HASH_MISMATCH") {
+    return { code: "EVIDENCE_HASH_MISMATCH", title: "Evidence integrity check failed", message: "The stored bytes did not match the browser SHA-256. The hash was not anchored; choose the original file and retry." };
+  }
+  if (raw === "EVIDENCE_UPLOAD_FAILED") {
+    return { code: "EVIDENCE_UPLOAD_FAILED", title: "Evidence was not stored", message: "The evidence service is unavailable or rejected the upload. Nothing was anchored; retry when storage is healthy." };
+  }
+
+  if (impactRegistryError && contractCode) {
+    if (contractCode === 3) return { code: "CONTRACT_PAUSED", title: "Contract temporarily paused", message: "This lifecycle action is paused. Public reads and eligible refunds remain available." };
+    if ([4, 14, 15].includes(contractCode)) return { code: "UNAUTHORIZED_REVIEWER", title: "This account cannot perform that role", message: "Use the assigned, accepted account and check that creator, payout, reviewer, arbitrator, and contributor roles do not conflict." };
+    if (contractCode === 11) return { code: "UNSUPPORTED_ASSET", title: "Asset is not allowlisted", message: "Create this project with an enabled Testnet asset and an amount inside its immutable policy." };
+    if (contractCode === 20) return { code: "DUPLICATE_VOTE", title: "Contributor decision already recorded", message: "This account already voted for this milestone attempt. The on-chain receipt prevents duplicates." };
+    if (contractCode === 21) return { code: "DUPLICATE_ATTESTATION", title: "Reviewer decision already recorded", message: "This reviewer already attested to this exact evidence attempt." };
+    if (contractCode === 23) return { code: "EVIDENCE_HASH_MISMATCH", title: "Evidence hash does not match", message: "Reload the project and verify the content hash before signing another review or vote." };
+    if (contractCode === 27) return { code: "DISPUTED_MILESTONE", title: "Milestone is under dispute", message: "Payout is frozen until the arbitrator threshold or dispute timeout resolves it." };
+    if ([17, 18, 25, 26, 28].includes(contractCode)) return { code: "FUNDING_CLOSED", title: "The stage is still open", message: "This permissionless finalizer is only valid after the current funding, activation, review, voting, or dispute deadline." };
+    if ([6, 7, 8, 9, 10, 12, 13, 16, 24].includes(contractCode)) return { code: "INVALID_GRANT", title: "Project transition is not valid", message: "Reload direct contract state and check the project stage, immutable policy, roles, deadline, schedule, and remaining evidence attempts." };
+    if (contractCode === 19) return { code: "NO_VOTING_POWER", title: "No contributor voting power", message: "Only eligible contributors can vote; creator, payout, reviewer, and arbitrator accounts are excluded." };
+  }
+  if (impactEscrowError && contractCode) {
+    if (contractCode === 3) return { code: "CONTRACT_PAUSED", title: "Escrow mutation is paused", message: "Risky custody changes are paused. Eligible refund claims remain available." };
+    if (contractCode === 12) return { code: "UNSUPPORTED_ASSET", title: "Asset is not allowlisted", message: "The Escrow only accepts explicitly enabled assets with verified decimals and amount limits." };
+    if ([18, 19].includes(contractCode)) return { code: "REFUND_UNAVAILABLE", title: "Refund is not available", message: "The project has not enabled refunds or this account has no remaining refundable contribution." };
+    if (contractCode === 20) return { code: "DUPLICATE_REFUND", title: "Refund already claimed", message: "The Escrow receipt shows this account already claimed its share." };
+    if ([9, 10].includes(contractCode)) return { code: "FUNDING_CLOSED", title: "Contribution cannot be accepted", message: "The funding window, exact goal, or per-contributor cap prevents this contribution." };
+    if ([14, 15, 16, 17].includes(contractCode)) return { code: "UNAUTHORIZED_RELEASE", title: "Payout does not match the escrow schedule", message: "Only the next exact, Registry-approved milestone can be released once." };
+  }
+  if (signalsError && contractCode === 5) {
+    return { code: "ALREADY_VOTED", title: "Signal already cast", message: "This account has already voted. The permanent Signals contract accepts one vote per address." };
+  }
+
   if (
     message.includes("reject") ||
     message.includes("denied") ||
@@ -195,7 +263,7 @@ export function friendlyError(error: unknown): FriendlyError {
     };
   }
 
-  if (message.includes("#5") || message.includes("alreadyvoted") || message.includes("already voted")) {
+  if (message.includes("alreadyvoted") || message.includes("already voted")) {
     return {
       code: "ALREADY_VOTED",
       title: "Signal already cast",
@@ -203,7 +271,7 @@ export function friendlyError(error: unknown): FriendlyError {
     };
   }
 
-  if (message.includes("#13") || message.includes("duplicate milestone")) {
+  if (message.includes("duplicate milestone")) {
     return {
       code: "DUPLICATE_VOTE",
       title: "Milestone vote already cast",

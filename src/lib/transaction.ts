@@ -18,7 +18,28 @@ const horizon = new Horizon.Server(HORIZON_URL);
 async function availableXlm(address: string) {
   const account = await horizon.loadAccount(address);
   const native = account.balances.find((balance) => balance.asset_type === "native");
-  return native ? Number(native.balance) : 0;
+  if (!native) return 0;
+  const accountRecord = account as typeof account & {
+    subentry_count?: number;
+    num_sponsoring?: number;
+    num_sponsored?: number;
+  };
+  const reserveEntries = Math.max(
+    2,
+    2 +
+      Number(accountRecord.subentry_count ?? 0) +
+      Number(accountRecord.num_sponsoring ?? 0) -
+      Number(accountRecord.num_sponsored ?? 0),
+  );
+  const sellingLiabilities = Number(
+    "selling_liabilities" in native ? native.selling_liabilities : 0,
+  );
+  // Simulation remains authoritative; this preflight only prevents an
+  // obviously unspendable native-asset request from reaching the wallet.
+  return Math.max(
+    0,
+    Number(native.balance) - sellingLiabilities - reserveEntries * 0.5 - 0.1,
+  );
 }
 
 export type TransactionUpdate = {
@@ -53,12 +74,14 @@ export async function submitContractCall(input: ContractCallInput): Promise<stri
       input.onUpdate({ stage, hash: stage === "submitted" || stage === "pending" ? hash : undefined });
       await new Promise((resolve) => setTimeout(resolve, 120));
     }
-    input.onUpdate({ stage: "success", hash });
+    input.onUpdate({ stage: "confirmed", hash });
     return hash;
   }
   input.onUpdate({ stage: "validating" });
-  const balance = await availableXlm(input.address);
-  if (balance - (input.spendXlm ?? 0) < 1.5) throw new Error("INSUFFICIENT_BALANCE");
+  const spendable = await availableXlm(input.address);
+  if (spendable < (input.spendXlm ?? 0)) {
+    throw new Error("INSUFFICIENT_SPENDABLE_BALANCE");
+  }
 
   input.onUpdate({ stage: "simulating" });
   const account = await server.getAccount(input.address);
@@ -69,7 +92,13 @@ export async function submitContractCall(input: ContractCallInput): Promise<stri
     .addOperation(new Contract(input.contractId).call(input.method, ...input.args))
     .setTimeout(90)
     .build();
-  const prepared = await server.prepareTransaction(transaction);
+  let prepared: Awaited<ReturnType<typeof server.prepareTransaction>>;
+  try {
+    prepared = await server.prepareTransaction(transaction);
+  } catch (cause) {
+    const detail = cause instanceof Error ? cause.message : String(cause);
+    throw new Error(`SIMULATION_FAILED:${input.contractId}:${input.method}:${detail}`);
+  }
 
   input.onUpdate({ stage: "awaiting_signature" });
   const { signedTxXdr } = await signTransaction(prepared.toXDR(), input.address);
@@ -85,6 +114,7 @@ export async function submitContractCall(input: ContractCallInput): Promise<stri
     sleepStrategy: () => 1_000,
   });
   if (result.status === rpc.Api.GetTransactionStatus.NOT_FOUND) {
+    input.onUpdate({ stage: "timed_out", hash: submitted.hash });
     const timeout = new Error("PENDING_TIMEOUT") as Error & { hash?: string };
     timeout.hash = submitted.hash;
     throw timeout;
@@ -94,6 +124,6 @@ export async function submitContractCall(input: ContractCallInput): Promise<stri
     failed.hash = submitted.hash;
     throw failed;
   }
-  input.onUpdate({ stage: "success", hash: submitted.hash });
+  input.onUpdate({ stage: "confirmed", hash: submitted.hash });
   return submitted.hash;
 }

@@ -16,9 +16,26 @@ export const NATIVE_ASSET_CONTRACT_ID =
   import.meta.env.VITE_NATIVE_ASSET_CONTRACT_ID ??
   "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
 
+export const IMPACT_REGISTRY_CONTRACT_ID = (
+  import.meta.env.VITE_IMPACT_REGISTRY_CONTRACT_ID ?? ""
+).trim();
+
+export const IMPACT_ESCROW_CONTRACT_ID = (
+  import.meta.env.VITE_IMPACT_ESCROW_CONTRACT_ID ?? ""
+).trim();
+
+export const EVIDENCE_API_URL = (
+  import.meta.env.VITE_EVIDENCE_API_URL ?? import.meta.env.VITE_INDEXER_URL ?? ""
+).replace(/\/$/, "");
+
+export const APP_RELEASE = (import.meta.env.VITE_APP_RELEASE ?? "development").trim();
+
 export const INDEXER_URL = (import.meta.env.VITE_INDEXER_URL ?? "").replace(/\/$/, "");
 
 export const GRANTS_ENABLED = Boolean(REGISTRY_CONTRACT_ID && ESCROW_CONTRACT_ID);
+export const IMPACT_ENABLED = Boolean(
+  IMPACT_REGISTRY_CONTRACT_ID && IMPACT_ESCROW_CONTRACT_ID,
+);
 
 export const RPC_URL =
   import.meta.env.VITE_STELLAR_RPC_URL ?? "https://soroban-testnet.stellar.org";

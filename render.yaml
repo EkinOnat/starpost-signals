@@ -13,8 +13,18 @@ services:
         value: CCLUIBA3E7CILJOQYPYLV46W67U5HHR5PVQP4UEC6KTCYHWGZ5OFICHQ
       - key: ESCROW_CONTRACT_ID
         value: CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK
+      - key: IMPACT_REGISTRY_CONTRACT_ID
+        sync: false
+      - key: IMPACT_ESCROW_CONTRACT_ID
+        sync: false
       - key: INDEXER_DATA_FILE
         value: /var/data/indexer-state.json
+      - key: EVIDENCE_DATA_DIR
+        value: /var/data/content
+      - key: INDEXER_START_LEDGER
+        value: 1
+      - key: MAX_READY_LAG_LEDGERS
+        value: 20
       - key: CORS_ORIGINS
         value: https://starpost-signals.vercel.app
     disk:

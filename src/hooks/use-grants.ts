@@ -21,6 +21,7 @@ export function useGrants() {
   const [state, setState] = useState<GrantState>(INITIAL_STATE);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("connecting");
   const cursor = useRef<string | undefined>(undefined);
+  const lastIndexedEventId = useRef<string | null>(null);
   const hydrationAttempts = useRef(new Set<number>());
 
   const applyEvent = useCallback((event: ActivityEvent) => {
@@ -29,15 +30,29 @@ export function useGrants() {
 
   const reconcile = useCallback(async () => {
     if (INDEXER_URL) {
-      const [grantResponse, eventResponse] = await Promise.all([
-        fetch(`${INDEXER_URL}/api/grants`),
-        fetch(`${INDEXER_URL}/api/events?limit=200`),
-      ]);
-      if (!grantResponse.ok || !eventResponse.ok) throw new Error("Indexer snapshot unavailable");
-      const grantBody = (await grantResponse.json()) as { grants: GrantView[] };
-      const eventBody = (await eventResponse.json()) as { events: ActivityEvent[] };
-      setState(applyActivitySnapshot(grantBody.grants, eventBody.events));
-      return;
+      try {
+        const [grantResponse, eventResponse] = await Promise.all([
+          fetch(`${INDEXER_URL}/api/v1/grants`),
+          fetch(`${INDEXER_URL}/api/v1/events?limit=200`),
+        ]);
+        if (!grantResponse.ok || !eventResponse.ok) throw new Error("Indexer snapshot unavailable");
+        const grantBody = (await grantResponse.json()) as { grants: GrantView[] };
+        const eventBody = (await eventResponse.json()) as { events: ActivityEvent[]; cursor?: string; lastEventId?: string | null };
+        cursor.current = eventBody.cursor;
+        lastIndexedEventId.current = eventBody.lastEventId ?? eventBody.events[0]?.id ?? null;
+        setState((current) => {
+          const snapshot = applyActivitySnapshot(grantBody.grants, eventBody.events);
+          const snapshotIds = new Set(snapshot.events.map((event) => event.id));
+          const eventsReceivedDuringFetch = current.events
+            .filter((event) => !snapshotIds.has(event.id))
+            .sort((left, right) => left.ledger - right.ledger);
+          return eventsReceivedDuringFetch.reduce(reduceActivity, snapshot);
+        });
+        return;
+      } catch {
+        // Direct RPC remains the read fallback. Contract reads—not the
+        // indexer—are authoritative for every financial mutation.
+      }
     }
     const page = await fetchActivityEvents(cursor.current);
     cursor.current = page.cursor;
@@ -83,24 +98,36 @@ export function useGrants() {
     };
 
     if (INDEXER_URL && typeof EventSource !== "undefined") {
-      void reconcile().catch(() => undefined);
-      source = new EventSource(`${INDEXER_URL}/api/stream`);
-      source.onopen = () => active && setSyncStatus("live");
-      source.onmessage = (message) => {
+      void (async () => {
         try {
-          applyEvent(JSON.parse(message.data) as ActivityEvent);
+          await reconcile();
+          if (!active) return;
+          const after = lastIndexedEventId.current
+            ? `?after=${encodeURIComponent(lastIndexedEventId.current)}`
+            : "";
+          source = new EventSource(`${INDEXER_URL}/api/v1/stream${after}`);
+          source.onopen = () => active && setSyncStatus("live");
+          source.onmessage = (message) => {
+            try {
+              const event = JSON.parse(message.data) as ActivityEvent;
+              lastIndexedEventId.current = event.id;
+              applyEvent(event);
+            } catch {
+              // A malformed SSE frame is isolated; the stream remains connected.
+            }
+          };
+          source.onerror = () => {
+            source?.close();
+            source = null;
+            if (active) {
+              setSyncStatus("retrying");
+              void poll();
+            }
+          };
         } catch {
-          // A malformed SSE frame is isolated; the stream remains connected.
+          if (active) void poll();
         }
-      };
-      source.onerror = () => {
-        source?.close();
-        source = null;
-        if (active) {
-          setSyncStatus("retrying");
-          void poll();
-        }
-      };
+      })();
     } else {
       void poll();
     }

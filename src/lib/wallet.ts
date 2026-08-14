@@ -55,6 +55,16 @@ export async function disconnectWallet() {
 }
 
 export async function signTransaction(xdr: string, address: string) {
+  const [network, active] = await Promise.all([
+    StellarWalletsKit.getNetwork(),
+    StellarWalletsKit.fetchAddress(),
+  ]);
+  if (network.networkPassphrase !== NETWORK_PASSPHRASE) {
+    throw new Error("WRONG_NETWORK");
+  }
+  if (active.address !== address) {
+    throw new Error("WALLET_ACCOUNT_CHANGED");
+  }
   return StellarWalletsKit.signTransaction(xdr, {
     address,
     networkPassphrase: NETWORK_PASSPHRASE,

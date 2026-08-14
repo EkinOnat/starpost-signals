@@ -10,9 +10,10 @@
     "typecheck": "tsc -b --pretty false && tsc -p indexer/tsconfig.json --pretty false",
     "lint": "npm run typecheck",
     "test": "vitest run",
-    "test:frontend": "vitest run src",
+    "test:frontend": "vitest run src/domain src/components",
     "test:indexer": "vitest run indexer",
     "test:e2e": "playwright test",
+    "verify:users": "node scripts/verify-user-interactions.mjs",
     "indexer": "tsx indexer/src/main.ts",
     "preview": "vite preview"
   },

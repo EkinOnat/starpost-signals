@@ -2,16 +2,18 @@
 
 ## Indexer
 
-- Health: `GET /health`
-- Snapshots: `GET /api/grants` and `GET /api/events?limit=200`
-- Stream: `GET /api/stream`
+- Liveness/readiness: `GET /health` and `GET /ready`
+- Snapshots: `GET /api/v1/grants`, `GET /api/v1/events`, and `GET /api/v1/contract-events`
+- Streams: `GET /api/v1/stream` and `GET /api/v1/contract-stream`
 - Persistence: set `INDEXER_DATA_FILE` to a mounted persistent-disk path.
-- Recovery: stop the process, restore the last state file if available, and restart. If the file is absent, the service backfills the latest 2,000 ledgers and resumes from the returned cursor.
+- Recovery: stop the process, restore the state file or its last-valid `.bak`, and restart. A fresh service starts at the configured `INDEXER_START_LEDGER` within the RPC retention window and resumes from the returned cursor.
 - Logs are structured JSON and exclude secrets.
 
 ## RPC degradation
 
-The service retries with bounded exponential backoff. The browser reports `retrying` or `offline`, then uses direct RPC event polling. Financial actions do not depend on indexer availability.
+The service retries with bounded exponential backoff. The browser reports `retrying` or `offline`, then uses direct RPC event polling. Financial actions and Level 4 project reads do not depend on indexer availability.
+
+See [`level4/OPERATIONS.md`](level4/OPERATIONS.md) for the V1 evidence service, readiness alerts, backup, and urgent Testnet TTL runbook.
 
 ## Contract incident response
 

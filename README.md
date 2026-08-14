@@ -14,14 +14,27 @@ Starpost Signals is a production-style community coordination dApp on Stellar Te
 
 **Level 3 Escrow:** [`CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK`](https://stellar.expert/explorer/testnet/contract/CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK)
 
+## Level 4: Proof-to-Payout
+
+The additive Level 4 implementation extends the product to **Signal → Fund → Prove → Approve → Payout**. It includes versioned Impact Registry V1 and Impact Escrow V1 contracts, independent reviewer/arbitrator thresholds, content-addressed evidence, bounded contributor voting/disputes, exact milestone release, terminal refunds, a public mobile workflow, and a hash-verifying evidence/event service.
+
+**Deployment status:** the V1 code is implemented, locally verified, and intentionally **not represented as deployed**. The Proof view shows this explicitly until both owner-verified Testnet contract IDs are configured. Local optimized WASM hashes are:
+
+- Impact Registry V1: `0dc2a777489b37ed20051fd4cac107711387e0c3d90098766a4471f5777ce2e7`
+- Impact Escrow V1: `6a6f5e77ecb6e80f67943e348112084249adf8f17a9803ba4f16f35fecbb627f`
+
+Architecture, operations/TTL response, privacy, threat model, testing, onboarding, demo, and honest evidence status are in [`docs/level4`](docs/level4/ARCHITECTURE.md). The manual protected deployment workflow creates the final manifest; it does not publish secrets or invent transaction evidence.
+
 ![Existing live Signals poll](docs/screenshots/live-app.png)
 
 ## Product flow
 
 1. **Signal** — connect Freighter, xBull, Albedo, or LOBSTR and cast one permanent category vote.
 2. **Fund** — create or discover a category grant and contribute Testnet XLM into its Escrow vault.
-3. **Deliver** — contributors vote with contribution-weighted power; approved milestones release the exact scheduled XLM amount.
-4. **Verify** — unified events, RPC-confirmed transaction states, and Stellar Expert links expose the lifecycle end to end.
+3. **Prove** — a creator stores public content-addressed evidence and anchors its SHA-256 commitment.
+4. **Approve** — independent reviewers attest, then capped contributor weight approves or disputes within bounded windows.
+5. **Payout** — Escrow releases the exact authorized milestone or conserves the remaining pool for refunds.
+6. **Verify** — raw versioned events, RPC-confirmed transaction states, and Stellar Expert links expose the lifecycle end to end.
 
 ## Level 1, 2, and 3 checklist
 
@@ -55,7 +68,7 @@ Level 1 was completed in the companion [StarPost payment dApp](https://github.co
 - [x] Escrow-to-native-XLM asset transfers
 - [x] Exact-goal funding, weighted voting, milestone release, cancellation, and refunds
 - [x] Responsive Signals, Grants, and Activity views
-- [x] Shared `validating -> simulating -> awaiting_signature -> submitted -> pending -> success/failed` lifecycle
+- [x] Shared `validating -> simulating -> awaiting_signature -> submitted -> pending -> confirmed/failed/timed_out` lifecycle
 - [x] Persistent cursor indexer, event deduplication, snapshots, SSE, retry, and RPC fallback
 - [x] 40 Rust contract tests, 16 frontend tests, 10 indexer tests, and 3 E2E flows
 - [x] Independent CI jobs, protected deployment workflow, release artifacts, and Dependabot
@@ -156,8 +169,9 @@ All Signals and Grants mutations use one state machine:
 
 ```text
 idle -> validating -> simulating -> awaiting_signature
-     -> submitted -> pending -> success
-                             `-> failed
+     -> submitted -> pending -> confirmed
+                             |-> failed
+                             `-> timed_out
 ```
 
 The UI handles wallet availability/lock/rejection, wrong network, insufficient spendable XLM, RPC/simulation/submission errors, pending timeouts, invalid schedules/deadlines, funding state, goal cap, no voting power, duplicate votes, quorum/approval failures, unavailable/duplicate refunds, and paused contracts. A pending timeout is neutral and keeps its Explorer link.
@@ -167,11 +181,14 @@ The UI handles wallet availability/lock/rejection, wrong network, insufficient s
 The TypeScript service exposes:
 
 - `GET /health`
-- `GET /api/events?limit=200`
-- `GET /api/grants`
-- `GET /api/stream` (Server-Sent Events)
+- `GET /ready`
+- `GET /api/v1/events?limit=200`
+- `GET /api/v1/grants`
+- `GET /api/v1/contract-events`
+- `GET /api/v1/stream` and `/api/v1/contract-stream` (resumable Server-Sent Events)
+- content-addressed `/api/v1/metadata/*` and `/api/v1/evidence/*`
 
-It persists the event cursor and materialized state to `INDEXER_DATA_FILE`, backfills after restart, retries RPC with bounded exponential delay, sends heartbeats, and emits structured JSON logs. `render.yaml` and `Dockerfile.indexer` define a persistent-disk deployment.
+It persists the event cursor and materialized state to `INDEXER_DATA_FILE` with atomic replacement and backup recovery, retains a versioned raw contract-event stream, reports ledger lag, retries RPC with bounded exponential delay, sends heartbeats, and emits structured JSON logs. Evidence and index data share the mounted persistent disk defined by `render.yaml` and `Dockerfile.indexer`.
 
 ## Local setup
 
@@ -210,12 +227,16 @@ npm run indexer
 | `VITE_STELLAR_RPC_URL` | Stellar RPC endpoint |
 | `VITE_HORIZON_URL` | Horizon balance endpoint |
 | `VITE_INDEXER_URL` | Public indexer origin |
+| `VITE_IMPACT_REGISTRY_CONTRACT_ID` | Level 4 Impact Registry V1 address; empty before deployment |
+| `VITE_IMPACT_ESCROW_CONTRACT_ID` | Level 4 Impact Escrow V1 address; empty before deployment |
+| `VITE_EVIDENCE_API_URL` | Hash-verifying evidence service origin |
+| `VITE_APP_RELEASE` | Public immutable release identifier |
 
 If Registry/Escrow IDs are absent, the Grants discovery view clearly enters preview mode and financial wallet actions explain that deployment is pending. The live Signals poll still works.
 
 ### Indexer
 
-`PORT`, `STELLAR_RPC_URL`, all three custom contract IDs, `INDEXER_DATA_FILE`, `POLL_INTERVAL_MS`, `CORS_ORIGINS`, and `RATE_LIMIT_PER_MINUTE` are validated on startup.
+`PORT`, `STELLAR_RPC_URL`, all configured contract IDs, `INDEXER_DATA_FILE`, `EVIDENCE_DATA_DIR`, size/lag limits, `POLL_INTERVAL_MS`, `CORS_ORIGINS`, and `RATE_LIMIT_PER_MINUTE` are validated on startup.
 
 ## Quality gates
 
@@ -233,9 +254,9 @@ npm run test:e2e
 
 Current local coverage:
 
-- 40 Rust tests (5 Signals + 16 Escrow + 19 Registry)
-- 16 frontend Vitest/Testing Library tests
-- 10 indexer tests
+- 60 Rust tests (preserved Level 1–3 plus 20 focused V1 tests)
+- 19 frontend Vitest/Testing Library tests
+- 14 indexer/evidence tests
 - 3 Playwright mobile Chromium flows at 390x844
 
 ## CI/CD
