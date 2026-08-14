@@ -13,13 +13,14 @@ test("navigates the responsive Signals, Grants, and Activity views with a mocked
   await expect(page.getByText("UNIFIED CONTRACT ACTIVITY")).toBeVisible();
 });
 
-test("keeps the Level 4 public view honest before contract deployment", async ({ page }) => {
+test("reads the deployed Level 4 public view without fabricated projects", async ({ page }) => {
   await page.goto("/");
   const mobile = page.getByRole("navigation", { name: "Mobile navigation" });
   await mobile.getByRole("button", { name: /proof/i }).click();
   await expect(page.getByRole("heading", { name: /fund the work/i })).toBeVisible();
-  await expect(page.getByText("Level 4 contracts are not configured")).toBeVisible();
-  await expect(page.getByRole("button", { name: /create proof project/i })).toBeDisabled();
+  await expect(page.getByText("Level 4 contracts are not configured")).toHaveCount(0);
+  await expect(page.getByText("ACTIVE PROJECTS")).toBeVisible();
+  await expect(page.getByRole("button", { name: /create proof project/i })).toBeEnabled();
   await expect(page.locator(".impact-project-card")).toHaveCount(0);
 });
 

@@ -14,16 +14,22 @@ Starpost Signals is a production-style community coordination dApp on Stellar Te
 
 **Level 3 Escrow:** [`CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK`](https://stellar.expert/explorer/testnet/contract/CADLWMML7RAV2INFHOYA3QNGELSORVXV7LORDBYMJJMLXTVZHGT5NRLK)
 
+**Level 4 Impact Registry V1:** [`CBHNVYK2YL4FWYETEMN2HCAEYEMMJTL4MQWY4PODMMYFKTIJLNURG6T3`](https://stellar.expert/explorer/testnet/contract/CBHNVYK2YL4FWYETEMN2HCAEYEMMJTL4MQWY4PODMMYFKTIJLNURG6T3)
+
+**Level 4 Impact Escrow V1:** [`CAB4Y37SZ3XUYG3OMGQQECXTE5IYQXXI23UFF2V4RBDV76AIHGMGK3PJ`](https://stellar.expert/explorer/testnet/contract/CAB4Y37SZ3XUYG3OMGQQECXTE5IYQXXI23UFF2V4RBDV76AIHGMGK3PJ)
+
 ## Level 4: Proof-to-Payout
 
 The additive Level 4 implementation extends the product to **Signal → Fund → Prove → Approve → Payout**. It includes versioned Impact Registry V1 and Impact Escrow V1 contracts, independent reviewer/arbitrator thresholds, content-addressed evidence, bounded contributor voting/disputes, exact milestone release, terminal refunds, a public mobile workflow, and a hash-verifying evidence/event service.
 
-**Deployment status:** the V1 code is implemented, locally verified, and intentionally **not represented as deployed**. The Proof view shows this explicitly until both owner-verified Testnet contract IDs are configured. Local optimized WASM hashes are:
+**Deployment status:** both V1 contracts are deployed and initialized on Stellar Testnet. Read-only smoke calls returned protocol version `1` and verified the Signals/Escrow wiring, independent guardian, running pause state, and immutable policy. Optimized WASM hashes are:
 
 - Impact Registry V1: `0dc2a777489b37ed20051fd4cac107711387e0c3d90098766a4471f5777ce2e7`
 - Impact Escrow V1: `6a6f5e77ecb6e80f67943e348112084249adf8f17a9803ba4f16f35fecbb627f`
 
 Architecture, operations/TTL response, privacy, threat model, testing, onboarding, demo, and honest evidence status are in [`docs/level4`](docs/level4/ARCHITECTURE.md). The manual protected deployment workflow creates the final manifest; it does not publish secrets or invent transaction evidence.
+
+Deployment and initialization transaction hashes are recorded in [`contract-deployment.json`](docs/level4/evidence/contract-deployment.json).
 
 ![Existing live Signals poll](docs/screenshots/live-app.png)
 
@@ -70,7 +76,7 @@ Level 1 was completed in the companion [StarPost payment dApp](https://github.co
 - [x] Responsive Signals, Grants, and Activity views
 - [x] Shared `validating -> simulating -> awaiting_signature -> submitted -> pending -> confirmed/failed/timed_out` lifecycle
 - [x] Persistent cursor indexer, event deduplication, snapshots, SSE, retry, and RPC fallback
-- [x] 40 Rust contract tests, 16 frontend tests, 10 indexer tests, and 3 E2E flows
+- [x] 60 Rust contract tests, 19 frontend tests, 14 indexer tests, and 4 E2E flows
 - [x] Independent CI jobs, protected deployment workflow, release artifacts, and Dependabot
 - [x] Threat model, operations guide, deployment manifest, and reproducible WASM hashes
 - [x] Registry and Escrow Testnet deployment and nested-call proof hash

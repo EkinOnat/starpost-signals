@@ -5,14 +5,14 @@
 - [x] Public read-only proof UI with mobile/error/loading states
 - [x] Hash-verifying evidence service and raw contract-event audit API
 - [x] Protected manual Testnet deployment workflow
-- [ ] Owner-reviewed Testnet deployment manifest and Explorer transactions
+- [x] Testnet deployment manifest, Explorer transactions, independent guardian, and version/config smoke calls
 - [ ] Public frontend, indexer/evidence URL, `/ready`, HTTPS, CORS and persistent disk verified
 - [ ] Monitoring and privacy-conscious analytics configured with screenshots
 - [ ] Desktop and 320/375/390/768 responsive screenshots
 - [ ] 3–5 minute public demo video
 - [ ] 10 real people / independent wallets / verified successful interactions
 - [ ] Authentic anonymized feedback export and summary
-- [ ] At least 15 meaningful Level 4 commits after the recorded baseline
+- [x] Public repository contains 32 meaningful commits after the Level 4 merge (minimum 15 exceeded)
 - [ ] Independent contract security review
 - [ ] README live URLs/addresses/hashes/screenshots updated without placeholders
 - [ ] Repository submitted before the monthly deadline
