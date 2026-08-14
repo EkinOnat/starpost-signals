@@ -37,4 +37,4 @@
 - Contributor voting measures capital committed, not unique humans.
 - The Registry does not judge off-chain milestone evidence; contributors make that decision.
 - A paused contract temporarily blocks financial mutations. Reads and Explorer evidence remain available.
-- A lost or expired persistent entry after its extended TTL would require an operational migration; regular activity and maintenance should extend TTL before that point.
+- TTL expiry can archive state and introduce restore writes, rent, availability, and UX impact. Simulated browser getters do not persist TTL bumps; operate a signed keeper and explicit restore path. See the Level 4 operations runbook.
