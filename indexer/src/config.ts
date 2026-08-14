@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 
 const SIGNALS_DEFAULT = "CBHWJQ6Q4FAKCTC5IOS5YJDB2AOP5EF4SE6ODOLACCZZ2B3GV34J3YIP";
+const IMPACT_REGISTRY_DEFAULT = "CBHNVYK2YL4FWYETEMN2HCAEYEMMJTL4MQWY4PODMMYFKTIJLNURG6T3";
+const IMPACT_ESCROW_DEFAULT = "CAB4Y37SZ3XUYG3OMGQQECXTE5IYQXXI23UFF2V4RBDV76AIHGMGK3PJ";
 
 function contractId(name: string, fallback = "") {
   const value = process.env[name]?.trim() || fallback;
@@ -19,8 +21,8 @@ export function loadConfig() {
   const signals = contractId("SIGNALS_CONTRACT_ID", SIGNALS_DEFAULT);
   const registry = contractId("REGISTRY_CONTRACT_ID");
   const escrow = contractId("ESCROW_CONTRACT_ID");
-  const impactRegistry = contractId("IMPACT_REGISTRY_CONTRACT_ID");
-  const impactEscrow = contractId("IMPACT_ESCROW_CONTRACT_ID");
+  const impactRegistry = contractId("IMPACT_REGISTRY_CONTRACT_ID", IMPACT_REGISTRY_DEFAULT);
+  const impactEscrow = contractId("IMPACT_ESCROW_CONTRACT_ID", IMPACT_ESCROW_DEFAULT);
   return {
     port: positiveInteger("PORT", 8787),
     rpcUrl: process.env.STELLAR_RPC_URL?.trim() || "https://soroban-testnet.stellar.org",
