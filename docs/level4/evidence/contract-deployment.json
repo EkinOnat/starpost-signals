@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "not_deployed",
+  "network": "testnet",
+  "signalsContractId": "CBHWJQ6Q4FAKCTC5IOS5YJDB2AOP5EF4SE6ODOLACCZZ2B3GV34J3YIP",
+  "impactRegistryContractId": null,
+  "impactEscrowContractId": null,
+  "registryWasmSha256": "0dc2a777489b37ed20051fd4cac107711387e0c3d90098766a4471f5777ce2e7",
+  "escrowWasmSha256": "6a6f5e77ecb6e80f67943e348112084249adf8f17a9803ba4f16f35fecbb627f",
+  "deployedAt": null,
+  "transactions": {}
+}
