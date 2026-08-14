@@ -25,6 +25,30 @@ export type NativeEvent = {
   closedAt: string;
 };
 
+export type IndexedContractEvent = {
+  schemaVersion: 1;
+  id: string;
+  contractId: string;
+  topic: string;
+  topics: unknown[];
+  value: unknown;
+  txHash: string;
+  ledger: number;
+  closedAt: string;
+};
+
+function jsonSafe(value: unknown): unknown {
+  if (typeof value === "bigint") return value.toString();
+  if (value instanceof Uint8Array) {
+    return Array.from(value, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  }
+  if (Array.isArray(value)) return value.map(jsonSafe);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, jsonSafe(item)]));
+  }
+  return value;
+}
+
 function numeric(value: unknown) {
   return typeof value === "bigint" ? Number(value) : Number(value ?? 0);
 }
@@ -82,6 +106,25 @@ export function decodeRpcEvent(event: rpc.Api.EventResponse) {
       ledger: event.ledger,
       closedAt: event.ledgerClosedAt,
     });
+  } catch {
+    return null;
+  }
+}
+
+export function decodeIndexedRpcEvent(event: rpc.Api.EventResponse): IndexedContractEvent | null {
+  try {
+    const topics = event.topic.map((topic) => scValToNative(topic));
+    return {
+      schemaVersion: 1,
+      id: event.id,
+      contractId: event.contractId?.toString() ?? "",
+      topic: String(topics[0] ?? "unknown"),
+      topics: jsonSafe(topics) as unknown[],
+      value: jsonSafe(scValToNative(event.value)),
+      txHash: event.txHash,
+      ledger: event.ledger,
+      closedAt: event.ledgerClosedAt,
+    };
   } catch {
     return null;
   }
