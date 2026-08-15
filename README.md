@@ -33,6 +33,16 @@ Deployment and initialization transaction hashes are recorded in [`contract-depl
 
 ![Existing live Signals poll](docs/screenshots/live-app.png)
 
+### Product, responsive, and operational evidence
+
+The deployed Level 4 public view reads the initialized Registry and Escrow directly from Stellar Testnet. The 390px capture demonstrates the responsive product shell and its aggregate raised, active-grant, and released-milestone metrics.
+
+![Level 4 Proof-to-Payout desktop UI](docs/screenshots/level4-proof-desktop.png)
+
+![390px responsive grants and product metrics](docs/screenshots/level3-mobile-ui.png)
+
+Hosted deployment monitoring is public in the [successful main CI run](https://github.com/EkinOnat/starpost-signals/actions/runs/31851234105), covering Contracts, Frontend, Indexer, E2E, and Security jobs. The production deployment status is attached to the merged main commit by Vercel.
+
 ## Product flow
 
 1. **Signal** — connect Freighter, xBull, Albedo, or LOBSTR and cast one permanent category vote.
