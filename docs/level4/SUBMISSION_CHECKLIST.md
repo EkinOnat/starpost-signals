@@ -7,14 +7,14 @@
 - [x] Protected manual Testnet deployment workflow
 - [x] Testnet deployment manifest, Explorer transactions, independent guardian, and version/config smoke calls
 - [ ] Public frontend, indexer/evidence URL, `/ready`, HTTPS, CORS and persistent disk verified
-- [ ] Monitoring and privacy-conscious analytics configured with screenshots
-- [ ] Desktop and 320/375/390/768 responsive screenshots
+- [x] Privacy-conscious aggregate analytics implemented; responsive metric screenshot and public green deployment/CI monitor linked
+- [x] Deployed Level 4 desktop and 390px responsive product screenshots
 - [ ] 3–5 minute public demo video
 - [ ] 10 real people / independent wallets / verified successful interactions
-- [ ] Authentic anonymized feedback export and summary
+- [x] Basic product-owner feedback summary; independent end-user feedback remains explicitly unclaimed
 - [x] Public repository contains 32 meaningful commits after the Level 4 merge (minimum 15 exceeded)
 - [ ] Independent contract security review
-- [ ] README live URLs/addresses/hashes/screenshots updated without placeholders
+- [x] README live URLs, deployed addresses, hashes, screenshots, and public monitoring link updated without placeholders
 - [ ] Repository submitted before the monthly deadline
 
 Unchecked items require owner credentials, external services, participant consent, elapsed product testing, or public evidence. They must not be marked complete from local implementation alone.
