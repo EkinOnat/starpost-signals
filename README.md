@@ -43,6 +43,8 @@ The deployed Level 4 public view reads the initialized Registry and Escrow direc
 
 Hosted deployment monitoring is public in the [successful main CI run](https://github.com/EkinOnat/starpost-signals/actions/runs/31851234105), covering Contracts, Frontend, Indexer, E2E, and Security jobs. The production deployment status is attached to the merged main commit by Vercel.
 
+The preserved Signals and Level 3 instance/code TTLs were extended on 2026-08-15, and submitted getters refreshed the active grant, milestones, vault, known contribution/vote receipts, and documented Signal voter receipt. Transaction hashes and residual keeper scope are recorded in the [Level 4 operations guide](docs/level4/OPERATIONS.md).
+
 ## Product flow
 
 1. **Signal** — connect Freighter, xBull, Albedo, or LOBSTR and cast one permanent category vote.

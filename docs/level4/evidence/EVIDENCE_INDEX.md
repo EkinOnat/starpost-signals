@@ -12,3 +12,4 @@ Expected directories: `analytics/`, `monitoring/`, `desktop/`, `mobile/`, `trans
 | `docs/screenshots/level3-mobile-ui.png` | 2026-08-13 | 390px responsive product UI and aggregate raised/active/released metrics | https://starpost-signals.vercel.app |
 | GitHub Actions run `31851234105` | 2026-08-14 | Hosted Contracts, Frontend, Indexer, E2E, and Security monitoring all successful | https://github.com/EkinOnat/starpost-signals/actions/runs/31851234105 |
 | `contract-deployment.json` | 2026-08-14 | V1 addresses, roles, WASM hashes, and six successful Testnet transactions | Stellar Testnet |
+| `docs/level4/OPERATIONS.md` TTL record | 2026-08-15 | Six instance/code extensions and seven submitted state/receipt refresh transactions | Stellar Testnet |

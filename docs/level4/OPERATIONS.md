@@ -35,7 +35,11 @@
 
 Contract getters simulated by the browser do **not** persist TTL extensions. A submitted maintenance invocation or user mutation does. V1 exposes `touch_project(project_id, actors)` and `touch_vault(project_id, contributors)` to bump the complete known record set, plus the Stellar CLI can extend contract instance/code TTL.
 
-At the read-only audit ledger 4,143,590, the existing Testnet contracts and active Level 3 grant entries had only about 37,400 ledgers remaining; the earliest observed live-until ledger was 4,180,959 (approximately 2026-08-17 at the observed close rate). Expiry on current protocol means archival/restore cost and availability impact, not proven permanent deletion. The project owner should submit extensions immediately, verify the resulting live-until ledgers, and then operate a signed keeper. This repository does not claim that action was performed.
+At the read-only audit ledger 4,143,590, the existing Testnet contracts and active Level 3 grant entries had only about 37,400 ledgers remaining; the earliest observed live-until ledger was 4,180,959 (approximately 2026-08-17 at the observed close rate). Expiry on current protocol means archival/restore cost and availability impact, not proven permanent deletion.
+
+On 2026-08-15, signed Testnet maintenance extended the preserved Signals, Level 3 Registry, and Level 3 Escrow instances to ledgers `4,681,144`, `4,681,146`, and `4,681,148`; their matching WASM code was extended to `4,681,153`, `4,681,155`, and `4,681,157`. Instance transactions: `fb597e69…59ea`, `d39a4816…9980`, `4eb15151…9d2d`. Code transactions: `63d6cddc…9a75`, `b3d635c5…94b9`, `4479fe9d…c871`.
+
+Submitted getter transactions persisted the contract-defined record extensions for Signals state (`f52085e6…e58f`), grant 1 (`001feca8…5d61`), its milestones (`731bd915…4ab2`), vault 1 (`e82aa01b…3525`), the known contribution (`5f732328…7bf3`), milestone-0 vote receipt (`a01d4090…d8c8`), and documented Signal voter receipt (`0794b63c…82a4`). Continue operating a keeper: the legacy record constants are shorter than the explicit instance/code extension, and undiscovered account-scoped voter receipts were not guessed.
 
 Keeper inputs must include every project contributor, reviewer, and arbitrator so account-scoped contribution, refund, vote, attestation, arbitration, and role receipts are touched. Monitor instance, code, project, milestone, evidence, vault, policy, and receipt keys. Treat `restoring_state` as a recoverable transaction state and pre-restore before a public demo.
 
