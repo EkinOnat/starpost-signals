@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Keep dependency changes intentional and branch-light. Review upgrades on
+    # the long-lived development branch instead of opening automatic PRs.
+    open-pull-requests-limit: 0
     groups:
       frontend-and-indexer:
         patterns: ["*"]
@@ -11,7 +14,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 0
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 0
