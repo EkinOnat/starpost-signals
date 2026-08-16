@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "checkedAt": "2026-08-16T18:19:54.789Z",
+  "verificationCommand": "npm run verify:users",
+  "participants": 10,
+  "transactions": 10,
+  "passed": 10,
+  "failures": []
+}

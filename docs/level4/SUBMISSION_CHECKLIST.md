@@ -10,8 +10,8 @@
 - [x] Privacy-conscious aggregate analytics implemented; responsive metric screenshot and public green deployment/CI monitor linked
 - [x] Deployed Level 4 desktop and 390px responsive product screenshots
 - [ ] 3–5 minute public demo video
-- [ ] 10 real people / independent wallets / verified successful interactions
-- [x] Basic product-owner feedback summary; independent end-user feedback remains explicitly unclaimed
+- [x] 10 real people / independent wallets / verified successful interactions
+- [x] Basic product-owner and independent end-user feedback summary
 - [x] Public repository contains 32 meaningful commits after the Level 4 merge (minimum 15 exceeded)
 - [ ] Independent contract security review
 - [x] README live URLs, deployed addresses, hashes, screenshots, and public monitoring link updated without placeholders

@@ -2,17 +2,19 @@
 
 ## Collection status
 
-- Collection date: 2026-08-15
-- Participants: 1 product-owner stakeholder
-- Independent end users: 0
-- Consented public wallet records: 0
-- Method: direct implementation review and release checklist
+- Collection dates: 2026-08-15 to 2026-08-16
+- Participants: 1 product-owner stakeholder and 10 independent end users
+- Independent end users: 10 of 10 required
+- Consented public wallet records: 10
+- Method: direct implementation review plus guided, independently signed Stellar Testnet wallet trials
 
-No quote, rating, or independent-user claim is invented. This is a basic stakeholder feedback summary, not a substitute for the required independent wallet cohort.
+No quote, rating, or independent-user claim is invented. Both independent participants rated ease of use `5/5`; optional free-text questions were intentionally left unanswered.
 
 ## Feedback themes
 
 The stakeholder requested a complete public release rather than a local prototype: public GitHub history, complete README documentation, live hosting, verifiable contract addresses, responsive product screenshots, analytics/monitoring evidence, and proof of real wallet usage. The Level 4 demo video was explicitly excluded from this release pass.
+
+All ten independent participants successfully connected Freighter wallets and cast permanent Signals votes on Stellar Testnet. The first two reported `5/5` ease of use; no rating was supplied for the remaining participants. No qualitative theme is inferred from blank free-text fields.
 
 ## Changes made
 
@@ -23,4 +25,4 @@ The stakeholder requested a complete public release rather than a local prototyp
 
 ## Deferred evidence
 
-Ten independent wallet interactions and independent end-user feedback remain uncollected. Automated identities or fabricated comments are not counted as users. The repository includes onboarding, consent-safe evidence fields, and an RPC/Horizon verification script so authentic participant transactions can be added reproducibly.
+The required cohort of ten has been collected. Automated identities or fabricated comments are not counted as users. All ten recorded transactions have unique consented participants, addresses, hashes, and successful Horizon results; final RPC/event batch verification is recorded with the release evidence.
