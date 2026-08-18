@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { EXPLORER_URL, GRANTS_ENABLED, REGISTRY_CONTRACT_ID } from "../config";
 import { CATEGORIES, type GrantCategory, type GrantView } from "../domain/grants";
+import type { GrantsStatus } from "../hooks/use-grants";
 import {
   cancelGrant,
   claimRefund,
@@ -29,11 +30,15 @@ export function GrantsView({
   address,
   initialCategory,
   runMutation,
+  status = "ready",
+  onRetry,
 }: {
   grants: GrantView[];
   address: string | null;
   initialCategory?: string;
   runMutation: MutationRunner;
+  status?: GrantsStatus;
+  onRetry?: () => void;
 }) {
   const [category, setCategory] = useState<GrantCategory | "All">(
     CATEGORIES.find((item) => item === initialCategory) ?? "All",
@@ -45,9 +50,14 @@ export function GrantsView({
   const visible = category === "All" ? grants : grants.filter((grant) => grant.category === category);
   const summary = useMemo(() => ({
     raised: grants.reduce((sum, grant) => sum + grant.raised, 0),
-    active: grants.filter((grant) => grant.status === "active" || grant.status === "funding").length,
+    active: grants.filter((grant) => grant.status === "active").length,
     released: grants.reduce((sum, grant) => sum + grant.milestones.filter((milestone) => milestone.status === "released").length, 0),
   }), [grants]);
+  // Nothing could be read from the Registry: show the failure instead of a
+  // summary of zeros that reads like a legitimately empty programme.
+  const unavailable = status === "error" && grants.length === 0;
+  const loading = status === "loading" && grants.length === 0;
+  const metric = (value: string) => (unavailable ? "—" : value);
 
   if (selected) {
     const progress = selected.goal ? Math.min(100, Math.round((selected.raised / selected.goal) * 100)) : 0;
@@ -83,9 +93,10 @@ export function GrantsView({
     <div className="view grants-view">
       <section className="grants-hero"><div><span className="eyebrow"><i>02</i> FUND THE WORK</span><h1>Move the strongest<br /><em>signals into motion.</em></h1></div><div><p>Community-backed projects are funded in Testnet XLM, released milestone by milestone, and verified through contract events.</p><button className="primary-action compact" type="button" onClick={() => setShowCreate(true)}>Create a grant <span>↗</span></button></div></section>
       {!GRANTS_ENABLED && <div className="preview-banner"><span>PREVIEW MODE</span><p>Discovery is populated with representative data. Wallet actions activate when the new Testnet Registry and Escrow IDs are configured.</p></div>}
-      <section className="grant-summary"><div><span>TOTAL RAISED</span><strong>{summary.raised.toLocaleString()} <small>XLM</small></strong></div><div><span>ACTIVE GRANTS</span><strong>{String(summary.active).padStart(2, "0")}</strong></div><div><span>MILESTONES RELEASED</span><strong>{String(summary.released).padStart(2, "0")}</strong></div></section>
+      {status === "error" && <div className="preview-banner discovery-error" role="alert"><span>READ FAILED</span><p>The Registry contract could not be read, so grant totals are not being shown. No figures are inferred while the read is unavailable.</p>{onRetry && <button className="secondary-action" type="button" onClick={onRetry}>Retry registry read</button>}</div>}
+      <section className="grant-summary"><div><span>TOTAL RAISED</span><strong>{metric(summary.raised.toLocaleString())} <small>XLM</small></strong></div><div><span>ACTIVE GRANTS</span><strong>{metric(String(summary.active).padStart(2, "0"))}</strong></div><div><span>MILESTONES RELEASED</span><strong>{metric(String(summary.released).padStart(2, "0"))}</strong></div></section>
       <section className="discovery-section"><div className="discovery-toolbar"><div><span>DISCOVER BY SIGNAL</span><h2>Community grants</h2></div><div className="category-filters" role="group" aria-label="Filter grants by category">{(["All", ...CATEGORIES] as const).map((item) => <button type="button" className={category === item ? "active" : ""} aria-pressed={category === item} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div></div>
-        {visible.length ? <div className="grant-grid">{visible.map((grant) => { const progress = grant.goal ? Math.min(100, Math.round((grant.raised / grant.goal) * 100)) : 0; const next = grant.milestones[grant.currentMilestone]; return <button type="button" className="grant-card" onClick={() => setSelectedId(grant.id)} key={grant.id}><div className="grant-card-top"><span className="category-chip">{grant.category}</span><span className={`status-chip status-${grant.status}`}>{statusLabel(grant.status)}</span></div><h3>{grant.title}</h3><p>{grant.description}</p><div className="grant-progress"><div><span>{grant.raised.toLocaleString()} XLM raised</span><strong>{progress}%</strong></div><i><b style={{ width: `${progress}%` }} /></i></div><div className="grant-next"><span><small>NEXT MILESTONE</small><strong>{next?.title ?? "All milestones delivered"}</strong></span><i>→</i></div><footer><span>{short(grant.creator)}</span><span>{daysRemaining(grant.deadline)}</span></footer></button>; })}</div> : <div className="empty-state large"><strong>No grants in this orbit yet</strong><p>Be the first to turn the selected signal into milestone-based work.</p><button className="secondary-action" type="button" onClick={() => setShowCreate(true)}>Create a {category} grant</button></div>}
+        {visible.length ? <div className="grant-grid">{visible.map((grant) => { const progress = grant.goal ? Math.min(100, Math.round((grant.raised / grant.goal) * 100)) : 0; const next = grant.milestones[grant.currentMilestone]; return <button type="button" className="grant-card" onClick={() => setSelectedId(grant.id)} key={grant.id}><div className="grant-card-top"><span className="category-chip">{grant.category}</span><span className={`status-chip status-${grant.status}`}>{statusLabel(grant.status)}</span></div><h3>{grant.title}</h3><p>{grant.description}</p><div className="grant-progress"><div><span>{grant.raised.toLocaleString()} XLM raised</span><strong>{progress}%</strong></div><i><b style={{ width: `${progress}%` }} /></i></div><div className="grant-next"><span><small>NEXT MILESTONE</small><strong>{next?.title ?? "All milestones delivered"}</strong></span><i>→</i></div><footer><span>{short(grant.creator)}</span><span>{daysRemaining(grant.deadline)}</span></footer></button>; })}</div> : unavailable ? <div className="empty-state large"><strong>Registry state is unavailable</strong><p>Grants are read straight from the Registry contract on Testnet. That read failed, so nothing is listed — the page will not display balances it cannot verify on-chain.</p>{onRetry && <button className="secondary-action" type="button" onClick={onRetry}>Retry registry read</button>}</div> : loading ? <div className="empty-state large"><strong>Reading the Registry contract</strong><p>Discovering persisted grants directly from Testnet contract state.</p></div> : <div className="empty-state large"><strong>No grants in this orbit yet</strong><p>Be the first to turn the selected signal into milestone-based work.</p><button className="secondary-action" type="button" onClick={() => setShowCreate(true)}>Create a {category} grant</button></div>}
       </section>
       <CreateGrantDialog open={showCreate} initialCategory={category === "All" ? initialCategory : category} onClose={() => setShowCreate(false)} runMutation={runMutation} />
     </div>
