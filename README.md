@@ -251,8 +251,23 @@ npm run indexer
 | `VITE_IMPACT_ESCROW_CONTRACT_ID` | Level 4 Impact Escrow V1 address; empty before deployment |
 | `VITE_EVIDENCE_API_URL` | Hash-verifying evidence service origin |
 | `VITE_APP_RELEASE` | Public immutable release identifier |
+| `VITE_MAX_GRANT_ID` | Upper bound for the fallback discovery probe (default 100, hard cap 2000) |
+| `VITE_GRANT_DISCOVERY_CONCURRENCY` | Parallel grant reads per batch (default 4, hard cap 16) |
+| `VITE_GRANT_READ_TIMEOUT_MS` | Per-request contract read timeout (default 15000) |
 
 If Registry/Escrow IDs are absent, the Grants discovery view clearly enters preview mode and financial wallet actions explain that deployment is pending. The live Signals poll still works.
+
+### Grant discovery
+
+Grants are discovered from persisted Registry state, not from recent events. RPC serves only a short event window, so a `GrantCreated` event older than that window used to make a funded grant invisible; contract reads have no such expiry.
+
+1. The client reads the Registry's `NextGrantId` allocator directly from contract instance storage — the deployed Registry exposes no count or next-id getter, so this ledger entry is the exact enumeration bound.
+2. If that entry cannot be read, discovery falls back to a bounded probe of `1..VITE_MAX_GRANT_ID` in parallel batches. A missing id never stops the scan, so a gap cannot hide a later valid grant.
+3. Ids seen through events or the indexer are unioned in and de-duplicated, so discovery is always a superset of the event pipeline.
+4. `GrantNotFound` from the contract means the id does not exist; anything else is a transport failure and is reported as a retryable error rather than an empty dashboard.
+5. Each view records the ledger it was read at, so events already reflected in stored state are shown in the activity feed but never re-applied to contribution totals or vote weights.
+
+The indexer and the event stream enrich activity only. They are never required to discover a grant, and a stale indexer value is always overridden by a direct contract read.
 
 ### Indexer
 

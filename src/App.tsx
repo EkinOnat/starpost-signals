@@ -43,7 +43,7 @@ export default function App() {
   const [connecting, setConnecting] = useState(false);
   const [transaction, setTransaction] = useState<TransactionState>(INITIAL_TRANSACTION);
   const mutationLocks = useRef(new Set<string>());
-  const { grants, events, syncStatus, reconcile } = useGrants();
+  const { grants, events, syncStatus, grantsStatus, reconcile, retryRegistryRead } = useGrants();
 
   async function handleConnect(): Promise<string | null> {
     trackProductEvent("wallet_connection_attempted");
@@ -124,7 +124,7 @@ export default function App() {
       </header>
       <main>
         {view === "signals" && <SignalsView address={address} walletName={walletName} balance={balance} events={events} onConnect={async () => { await handleConnect(); }} onGrantCategory={openCategory} runMutation={runMutation} />}
-        {view === "grants" && <GrantsView grants={grants} address={address} initialCategory={grantCategory} runMutation={runMutation} />}
+        {view === "grants" && <GrantsView grants={grants} address={address} initialCategory={grantCategory} runMutation={runMutation} status={grantsStatus} onRetry={retryRegistryRead} />}
         {view === "proof" && <ProofToPayoutView address={address} runMutation={runMutation} />}
         {view === "activity" && <ActivityView events={events} syncStatus={syncStatus} />}
       </main>

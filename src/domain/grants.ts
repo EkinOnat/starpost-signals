@@ -35,6 +35,12 @@ export type GrantView = {
   currentMilestone: number;
   milestones: MilestoneView[];
   demo?: boolean;
+  /**
+   * Ledger this view was materialized from by a direct contract read. Events at
+   * or below it are already reflected in the stored state, so replaying them
+   * would double-count contributions and weighted votes.
+   */
+  syncedLedger?: number;
 };
 
 export type ActivityKind =
@@ -151,6 +157,15 @@ function sortEvents(events: ActivityEvent[]) {
     .slice(0, 2_000);
 }
 
+/**
+ * True when the grant already carries contract state read at or after this
+ * event's ledger. The event still joins the activity feed, but its additive
+ * effects (contribution totals, weighted votes) are not applied a second time.
+ */
+function alreadyMaterialized(grant: GrantView | undefined, event: ActivityEvent) {
+  return grant?.syncedLedger !== undefined && event.ledger <= grant.syncedLedger;
+}
+
 export function reduceActivity(state: GrantState, event: ActivityEvent): GrantState {
   if (state.events.some((existing) => existing.id === event.id)) return state;
   let grants = state.grants;
@@ -178,7 +193,7 @@ export function reduceActivity(state: GrantState, event: ActivityEvent): GrantSt
       },
       ...grants,
     ];
-  } else if (grantIndex >= 0) {
+  } else if (grantIndex >= 0 && !alreadyMaterialized(grants[grantIndex], event)) {
     grants = grants.map((grant, index) => {
       if (index !== grantIndex) return grant;
       if (event.kind === "ContributionMade") {
@@ -235,6 +250,32 @@ export function applyActivitySnapshot(
   // The indexer snapshot is already materialized from these events. Replaying
   // them here would double-count weighted votes and other additive fields.
   return { grants: structuredClone(grants), events: sortEvents(events) };
+}
+
+/**
+ * Folds directly-read contract state over event- or indexer-derived views.
+ * Contract state wins, so a stale or reconstructed indexer value can never
+ * outrank the Registry. A derived grant is kept only when it already carries an
+ * equal or newer authoritative baseline, which means live events have been
+ * applied on top of it and re-merging would roll them back.
+ */
+export function mergeAuthoritativeGrants(
+  derived: GrantView[],
+  authoritative: GrantView[],
+): GrantView[] {
+  const byId = new Map(derived.map((grant) => [grant.id, grant]));
+  for (const grant of authoritative) {
+    const existing = byId.get(grant.id);
+    if (
+      existing?.syncedLedger !== undefined &&
+      grant.syncedLedger !== undefined &&
+      existing.syncedLedger >= grant.syncedLedger
+    ) {
+      continue;
+    }
+    byId.set(grant.id, { ...grant, description: existing?.description ?? grant.description });
+  }
+  return [...byId.values()].sort((left, right) => right.id - left.id);
 }
 
 export type CreateGrantInput = {
