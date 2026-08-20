@@ -48,6 +48,26 @@ export const HORIZON_URL =
 export const READ_ONLY_SOURCE =
   "GDR3XZ6CFDXHBU65A47HRWXYWDYX6TEN543RXWJ7D2MOHUXDUCT34FTR";
 
+const DEPLOYED_TEST_GRANTS: Readonly<Record<string, readonly number[]>> = {
+  CCLUIBA3E7CILJOQYPYLV46W67U5HHR5PVQP4UEC6KTCYHWGZ5OFICHQ: [2],
+};
+
+function grantIdSet(raw: unknown, fallback: readonly number[]): ReadonlySet<number> {
+  const source = raw === undefined ? fallback.map(String) : String(raw).split(",");
+  return new Set(
+    source
+      .map((value) => Number(String(value).trim()))
+      .filter((value) => Number.isSafeInteger(value) && value > 0),
+  );
+}
+
+// Test records are operator-tagged by grant id for each deployed Registry. An
+// explicit empty VITE_TEST_GRANT_IDS value disables the deployment manifest.
+export const TEST_GRANT_IDS = grantIdSet(
+  import.meta.env.VITE_TEST_GRANT_IDS,
+  DEPLOYED_TEST_GRANTS[REGISTRY_CONTRACT_ID] ?? [],
+);
+
 function bounded(raw: unknown, fallback: number, minimum: number, maximum: number) {
   const value = Number(raw);
   if (!Number.isFinite(value)) return fallback;

@@ -30,6 +30,7 @@ const TESTNET_GRANTS: GrantView[] = [
     quorumBps: 5000,
     status: "funding",
     currentMilestone: 0,
+    recordKind: "test",
     milestones: [
       { index: 0, title: "Prototype and contributor review", amount: 400, yesWeight: 0, noWeight: 0, status: "voting" },
       { index: 1, title: "Public launch and documentation", amount: 600, yesWeight: 0, noWeight: 0, status: "pending" },
@@ -88,6 +89,13 @@ describe("GrantsView summary", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show 1 test record" }));
     expect(screen.getByRole("button", { name: /^payments funding demo/i })).toBeVisible();
     expect(screen.getByRole("button", { name: "Hide 1 test record" })).toBeVisible();
+  });
+
+  it("keeps an explicitly public zero-funded grant named demo in the public list", () => {
+    const publicDemo: GrantView = { ...TESTNET_GRANTS[0], recordKind: "public" };
+    render(<GrantsView grants={[publicDemo]} address={null} runMutation={vi.fn()} status="ready" />);
+    expect(screen.getByRole("button", { name: /^payments funding demo/i })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /test record/i })).not.toBeInTheDocument();
   });
 
   it("keeps the empty orbit state for a category with no grants", () => {

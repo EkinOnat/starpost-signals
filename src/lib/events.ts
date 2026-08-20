@@ -55,6 +55,7 @@ export function decodeActivityEvent(event: rpc.Api.EventResponse): ActivityEvent
   return {
     id: event.id,
     kind,
+    provenance: "live",
     contractId: event.contractId?.toString() ?? "",
     grantId,
     actor,

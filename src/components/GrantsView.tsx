@@ -26,9 +26,7 @@ function statusLabel(status: GrantView["status"]) {
 }
 
 function isTestRecord(grant: GrantView) {
-  return grant.status === "funding"
-    && grant.raised === 0
-    && grant.title.trim().toLowerCase() === "demo";
+  return grant.recordKind === "test";
 }
 
 export function GrantsView({
