@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { VERIFIED_ACTIVITY_EVENTS } from "../data/verified-activity";
 import type { ActivityEvent } from "../domain/grants";
 import { ActivityView } from "./ActivityView";
 
 const liveEvent: ActivityEvent = {
   id: "live-grant-event",
   kind: "FundsReleased",
+  provenance: "live",
   contractId: "CREGISTRY",
   grantId: 1,
   actor: "Registry",
@@ -17,6 +19,7 @@ const liveEvent: ActivityEvent = {
 
 describe("ActivityView verified history", () => {
   it("shows ten proven wallet interactions when the recent event window is empty", () => {
+    expect(VERIFIED_ACTIVITY_EVENTS.every((event) => event.provenance === "verified_archive")).toBe(true);
     render(<ActivityView events={[]} syncStatus="live" />);
     expect(screen.getByText("10 VERIFIED EVENTS")).toBeVisible();
     expect(screen.getByText("RPC CONNECTED")).toBeVisible();
@@ -32,12 +35,23 @@ describe("ActivityView verified history", () => {
     expect(screen.getByText("LIVE")).toBeVisible();
   });
 
-  it("deduplicates a live event that has the same transaction hash as archived proof", () => {
+  it("replaces archived proof only for the same transaction and activity kind", () => {
     render(<ActivityView events={[{
       ...liveEvent,
+      kind: "VoteCast",
       txHash: "b8ab9fff51e089944c75eecbe8a71e371fa9b8939106dbe878861e99c2516bd3",
     }]} syncStatus="live" />);
     expect(screen.getByText("10 VERIFIED EVENTS")).toBeVisible();
     expect(screen.getAllByRole("link")).toHaveLength(10);
+    expect(screen.getAllByText("PROVEN")).toHaveLength(9);
+  });
+
+  it("preserves a different activity kind from the same transaction", () => {
+    render(<ActivityView events={[{
+      ...liveEvent,
+      txHash: "b8ab9fff51e089944c75eecbe8a71e371fa9b8939106dbe878861e99c2516bd3",
+    }]} syncStatus="live" />);
+    expect(screen.getByText("11 VERIFIED EVENTS")).toBeVisible();
+    expect(screen.getAllByRole("link")).toHaveLength(11);
   });
 });

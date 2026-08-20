@@ -26,8 +26,9 @@ const VERIFIED_SIGNALS: VerifiedSignal[] = [
 ];
 
 export const VERIFIED_ACTIVITY_EVENTS: ActivityEvent[] = VERIFIED_SIGNALS.map((signal) => ({
-  id: `verified:${signal.txHash}`,
+  id: `signal-proof:${signal.txHash}`,
   kind: "VoteCast",
+  provenance: "verified_archive",
   contractId: CONTRACT_ID,
   actor: `${signal.participant} · ${signal.wallet}`,
   txHash: signal.txHash,
@@ -36,14 +37,17 @@ export const VERIFIED_ACTIVITY_EVENTS: ActivityEvent[] = VERIFIED_SIGNALS.map((s
 }));
 
 /**
- * Live/indexed events win when they represent the same transaction. The
- * verified archive fills only historical gaps, so an unavailable indexer can
- * never turn ten proven interactions into an empty activity screen.
+ * Live/indexed events win when they represent the same activity kind in the
+ * same transaction. The verified archive fills only historical gaps, so an
+ * unavailable indexer can never turn ten proven interactions into an empty
+ * activity screen. Other event kinds in the transaction remain visible.
  */
 export function mergeVerifiedActivity(liveEvents: ActivityEvent[]): ActivityEvent[] {
-  const byTransaction = new Map(
-    VERIFIED_ACTIVITY_EVENTS.map((event) => [event.txHash, event]),
+  const liveIdentities = new Set(
+    liveEvents.map((event) => `${event.txHash}:${event.kind}`),
   );
-  for (const event of liveEvents) byTransaction.set(event.txHash, event);
-  return [...byTransaction.values()].sort((left, right) => right.ledger - left.ledger);
+  const archivedGaps = VERIFIED_ACTIVITY_EVENTS.filter(
+    (event) => !liveIdentities.has(`${event.txHash}:${event.kind}`),
+  );
+  return [...liveEvents, ...archivedGaps].sort((left, right) => right.ledger - left.ledger);
 }

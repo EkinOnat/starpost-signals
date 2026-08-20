@@ -72,6 +72,7 @@ export function decodeNativeEvent(event: NativeEvent): ActivityEvent | null {
   return {
     id: event.id,
     kind,
+    provenance: "live",
     contractId: event.contractId,
     grantId: isSignal ? undefined : numeric(event.topics[1]),
     actor: isSignal

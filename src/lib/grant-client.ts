@@ -7,6 +7,7 @@ import {
   READ_ONLY_SOURCE,
   REGISTRY_CONTRACT_ID,
   RPC_URL,
+  TEST_GRANT_IDS,
 } from "../config";
 import {
   Account,
@@ -333,6 +334,7 @@ export async function readGrantView(id: number, current?: GrantView): Promise<Gr
     quorumBps: Number(grant.quorum_bps),
     status: contractStatus(grant.status),
     currentMilestone: Number(grant.current_milestone),
+    recordKind: TEST_GRANT_IDS.has(id) ? "test" : "public",
     milestones: milestones.map((milestone) => ({
       index: Number(milestone.index),
       title: String(milestone.title),

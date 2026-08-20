@@ -9,6 +9,7 @@ export type GrantStatus =
   | "completed";
 
 export type MilestoneStatus = "pending" | "voting" | "released";
+export type GrantRecordKind = "public" | "test";
 
 export type MilestoneView = {
   index: number;
@@ -34,6 +35,8 @@ export type GrantView = {
   status: GrantStatus;
   currentMilestone: number;
   milestones: MilestoneView[];
+  /** Explicit operator classification. Missing values are treated as public. */
+  recordKind?: GrantRecordKind;
   demo?: boolean;
   /**
    * Ledger this view was materialized from by a direct contract read. Events at
@@ -57,9 +60,13 @@ export type ActivityKind =
   | "GrantCancelled"
   | "GrantCompleted";
 
+export type ActivityProvenance = "live" | "verified_archive";
+
 export type ActivityEvent = {
   id: string;
   kind: ActivityKind;
+  /** Identifies where the event came from without coupling behavior to its id. */
+  provenance?: ActivityProvenance;
   contractId: string;
   grantId?: number;
   actor?: string;

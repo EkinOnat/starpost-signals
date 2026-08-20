@@ -254,6 +254,7 @@ npm run indexer
 | `VITE_MAX_GRANT_ID` | Upper bound for the fallback discovery probe (default 100, hard cap 2000) |
 | `VITE_GRANT_DISCOVERY_CONCURRENCY` | Parallel grant reads per batch (default 4, hard cap 16) |
 | `VITE_GRANT_READ_TIMEOUT_MS` | Per-request contract read timeout (default 15000) |
+| `VITE_TEST_GRANT_IDS` | Comma-separated grant IDs explicitly classified as test records and hidden from public totals by default |
 
 If Registry/Escrow IDs are absent, the Grants discovery view clearly enters preview mode and financial wallet actions explain that deployment is pending. The live Signals poll still works.
 
