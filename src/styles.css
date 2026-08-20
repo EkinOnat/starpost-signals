@@ -173,3 +173,22 @@ main { min-height: calc(100vh - 82px); }.view { animation: reveal .35s ease both
 }
 
 @media (prefers-reduced-motion:reduce) { .project-skeletons i { animation: none!important; } }
+
+/* Verified public evidence and demo-safe presentation */
+.test-record-toggle { margin-top: 12px; padding: 0; border: 0; border-bottom: 1px solid #63777a; background: transparent; color: #84989b; font: 500 7px "DM Mono",monospace; letter-spacing: .08em; cursor: pointer; }
+.event-kind { display: flex; flex-direction: column; gap: 4px; }
+.event-kind small { color: var(--acid); font-size: 6px; letter-spacing: .08em; }
+.deployment-proof-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.deployment-proof-card { min-height: 330px; }
+.deployment-proof-card code { overflow: hidden; color: #8ea1a4; font: 500 8px "DM Mono",monospace; text-overflow: ellipsis; white-space: nowrap; }
+.deployment-transaction-proof { margin-top: 22px; padding: 25px; border: 1px solid var(--line); display: grid; grid-template-columns: minmax(240px,.75fr) minmax(0,1.25fr); gap: 35px; }
+.deployment-transaction-proof>div>span { color: var(--acid); font: 500 7px "DM Mono",monospace; letter-spacing: .12em; }
+.deployment-transaction-proof>div>strong { display: block; margin-top: 9px; font-size: 14px; }
+.deployment-transaction-proof p { margin: 10px 0 0; color: #829699; font-size: 9px; line-height: 1.65; }
+.deployment-transaction-proof nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; background: var(--line); }
+.deployment-transaction-proof nav a { min-height: 43px; padding: 0 12px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; color: #9cabad; font: 500 7px "DM Mono",monospace; }
+.deployment-transaction-proof nav a:hover { color: var(--acid); }
+
+@media (max-width:720px) {
+  .deployment-proof-grid,.deployment-transaction-proof { grid-template-columns: 1fr; }
+}
