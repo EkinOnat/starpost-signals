@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { GrantView } from "../domain/grants";
 import { GrantsView } from "./GrantsView";
@@ -78,7 +78,16 @@ describe("GrantsView summary", () => {
   it("lists the persisted grant instead of the empty orbit state", () => {
     render(<GrantsView grants={TESTNET_GRANTS} address={null} runMutation={vi.fn()} status="ready" />);
     expect(screen.getByRole("button", { name: /starpost climate receipts/i })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /^payments funding demo/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show 1 test record" })).toBeVisible();
     expect(screen.queryByText("No grants in this orbit yet")).not.toBeInTheDocument();
+  });
+
+  it("keeps the on-chain test record available behind an explicit disclosure", () => {
+    render(<GrantsView grants={TESTNET_GRANTS} address={null} runMutation={vi.fn()} status="ready" />);
+    fireEvent.click(screen.getByRole("button", { name: "Show 1 test record" }));
+    expect(screen.getByRole("button", { name: /^payments funding demo/i })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Hide 1 test record" })).toBeVisible();
   });
 
   it("keeps the empty orbit state for a category with no grants", () => {

@@ -10,18 +10,22 @@ test("navigates the responsive Signals, Grants, and Activity views with a mocked
   await mobile.getByRole("button", { name: /grants/i }).click();
   await expect(page.getByRole("heading", { name: "Community grants" })).toBeVisible();
   await mobile.getByRole("button", { name: /activity/i }).click();
-  await expect(page.getByText("UNIFIED CONTRACT ACTIVITY")).toBeVisible();
+  await expect(page.getByText("VERIFIED CONTRACT ACTIVITY")).toBeVisible();
+  await expect(page.getByText("10 VERIFIED EVENTS")).toBeVisible();
 });
 
-test("reads the deployed Level 4 public view without fabricated projects", async ({ page }) => {
+test("reads verified Level 4 deployment proof without fabricated projects", async ({ page }) => {
   await page.goto("/");
   const mobile = page.getByRole("navigation", { name: "Mobile navigation" });
   await mobile.getByRole("button", { name: /proof/i }).click();
   await expect(page.getByRole("heading", { name: /fund the work/i })).toBeVisible();
   await expect(page.getByText("Level 4 contracts are not configured")).toHaveCount(0);
-  await expect(page.getByText("ACTIVE PROJECTS")).toBeVisible();
+  await expect(page.getByText("DEPLOYED V1 CONTRACTS")).toBeVisible();
+  await expect(page.getByText("VERIFIED TRANSACTIONS")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Proof infrastructure is live" })).toBeVisible();
   await expect(page.getByRole("button", { name: /create proof project/i })).toBeEnabled();
-  await expect(page.locator(".impact-project-card")).toHaveCount(0);
+  await expect(page.locator(".deployment-proof-card")).toHaveCount(2);
+  await expect(page.locator(".impact-project-card:not(.deployment-proof-card)")).toHaveCount(0);
 });
 
 test("creates a grant through review and all confirmed transaction stages", async ({ page }) => {

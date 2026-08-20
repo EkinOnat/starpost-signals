@@ -7,6 +7,7 @@ import {
   IMPACT_REGISTRY_CONTRACT_ID,
   INDEXER_URL,
 } from "../config";
+import { IMPACT_DEPLOYMENT_PROOF } from "../data/deployment-proof";
 import {
   formatAtomicAmount,
   shortAddress,
@@ -49,6 +50,38 @@ function statusLabel(value: string) {
 
 function dateTime(seconds: number) {
   return seconds > 0 ? new Date(seconds * 1_000).toLocaleString() : "Not started";
+}
+
+function DeploymentProof({ onCreate }: { onCreate: () => void }) {
+  const deployed = new Date(IMPACT_DEPLOYMENT_PROOF.deployedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+  return <>
+    <section className="impact-summary deployment-proof-summary">
+      <div><span>DEPLOYED V1 CONTRACTS</span><strong>{String(IMPACT_DEPLOYMENT_PROOF.contracts.length).padStart(2, "0")}</strong></div>
+      <div><span>VERIFIED TRANSACTIONS</span><strong>{String(IMPACT_DEPLOYMENT_PROOF.transactions.length).padStart(2, "0")}</strong></div>
+      <div><span>WASM ARTIFACTS</span><strong>{String(IMPACT_DEPLOYMENT_PROOF.contracts.length).padStart(2, "0")}</strong></div>
+    </section>
+    <section className="impact-discovery deployment-proof-view">
+      <header><div><span>PUBLIC DEPLOYMENT PROOF</span><h2>Proof infrastructure is live</h2></div><button type="button" className="secondary-action" onClick={onCreate}>Create first project</button></header>
+      <div className="impact-project-grid deployment-proof-grid">
+        {IMPACT_DEPLOYMENT_PROOF.contracts.map((contract) => <a className="impact-project-card deployment-proof-card" href={`${EXPLORER_URL}/contract/${contract.contractId}`} target="_blank" rel="noreferrer" key={contract.contractId}>
+          <header><span className="category-chip">{IMPACT_DEPLOYMENT_PROOF.network}</span><span className="status-chip status-active">Deployed</span></header>
+          <h3>{contract.name}</h3>
+          <p>{contract.role}. Inspect immutable contract state and code on Stellar Expert.</p>
+          <div className="project-proof-line"><span>WASM SHA-256</span><code>{contract.wasmSha256}</code></div>
+          <footer><span>{shortAddress(contract.contractId)}</span><span>Inspect ↗</span></footer>
+        </a>)}
+      </div>
+      <div className="deployment-transaction-proof">
+        <div><span>DEPLOYMENT AUDIT TRAIL</span><strong>Uploaded, deployed, and initialized on {deployed}</strong><p>The first project has not been created yet. Until then, this view shows only immutable deployment evidence—never fabricated project or payout data.</p></div>
+        <nav aria-label="Deployment proof transactions">{IMPACT_DEPLOYMENT_PROOF.transactions.map((transaction) => <a href={`${EXPLORER_URL}/tx/${transaction.txHash}`} target="_blank" rel="noreferrer" key={transaction.txHash}>{transaction.label}<span>↗</span></a>)}</nav>
+      </div>
+    </section>
+  </>;
 }
 
 function ProjectActions({
@@ -221,6 +254,11 @@ export function ProofToPayoutView({ address, runMutation }: { address: string | 
 
   const load = useCallback(async () => {
     if (!IMPACT_ENABLED) return;
+    if (import.meta.env.MODE === "e2e") {
+      setProjects([]);
+      setLoadState("ready");
+      return;
+    }
     setLoadState("loading");
     try {
       setProjects(await readImpactProjects());
@@ -243,13 +281,12 @@ export function ProofToPayoutView({ address, runMutation }: { address: string | 
     <section className="impact-hero"><div><span className="eyebrow"><i>03</i> PROOF TO PAYOUT</span><h1>Fund the work.<br /><em>Verify the outcome.</em></h1></div><div><p>Independent reviewers verify content-addressed evidence, contributors approve or dispute delivery, and Soroban escrow releases only the exact authorized milestone.</p><button className="primary-action compact" type="button" disabled={!IMPACT_ENABLED} onClick={() => setShowCreate(true)}>Create proof project <span>↗</span></button></div></section>
     {!IMPACT_ENABLED && <div className="deployment-banner" role="status"><strong>Level 4 contracts are not configured</strong><p>The implementation is ready for a versioned Testnet deployment. No preview projects or simulated payouts are shown. Add both V1 contract IDs to enable public reads and wallet actions.</p></div>}
     {IMPACT_ENABLED && <>
-      <section className="impact-summary"><div><span>ACTIVE PROJECTS</span><strong>{String(summary.active).padStart(2, "0")}</strong></div><div><span>EVIDENCE COMMITMENTS</span><strong>{String(summary.evidence).padStart(2, "0")}</strong></div><div><span>TOTAL RELEASED</span><strong>{formatAtomicAmount(summary.paid, 7)} <small>XLM</small></strong></div></section>
-      <section className="impact-discovery"><header><div><span>PUBLIC CONTRACT STATE</span><h2>Proof-based projects</h2></div><button type="button" className="secondary-action" onClick={() => void load()} disabled={loadState === "loading"}>{loadState === "loading" ? "Reading contracts…" : "Refresh"}</button></header>
+      {projects.length > 0 && <section className="impact-summary"><div><span>ACTIVE PROJECTS</span><strong>{String(summary.active).padStart(2, "0")}</strong></div><div><span>EVIDENCE COMMITMENTS</span><strong>{String(summary.evidence).padStart(2, "0")}</strong></div><div><span>TOTAL RELEASED</span><strong>{formatAtomicAmount(summary.paid, 7)} <small>XLM</small></strong></div></section>}
+      {loadState === "ready" && !projects.length ? <DeploymentProof onCreate={() => setShowCreate(true)} /> : <section className="impact-discovery"><header><div><span>PUBLIC CONTRACT STATE</span><h2>Proof-based projects</h2></div><button type="button" className="secondary-action" onClick={() => void load()} disabled={loadState === "loading"}>{loadState === "loading" ? "Reading contracts…" : "Refresh"}</button></header>
         {loadState === "loading" && !projects.length && <div className="project-skeletons" aria-label="Loading projects"><i /><i /><i /></div>}
         {loadState === "failed" && <div className="empty-state large"><strong>Contract reads are unavailable</strong><p>No financial state was inferred from the indexer. Check the Testnet RPC connection and retry.</p><button className="secondary-action" type="button" onClick={() => void load()}>Retry direct reads</button></div>}
-        {loadState === "ready" && !projects.length && <div className="empty-state large"><strong>No proof projects yet</strong><p>Create the first project after the V1 Registry and Escrow are initialized.</p><button className="secondary-action" type="button" onClick={() => setShowCreate(true)}>Create project</button></div>}
         {projects.length > 0 && <div className="impact-project-grid">{projects.map((project) => { const milestone = project.milestones[project.currentMilestone]; return <button className="impact-project-card" type="button" onClick={() => { trackProductEvent("project_viewed"); setSelectedId(project.id); }} key={project.id}><header><span className="category-chip">{project.category}</span><span className={`status-chip status-${project.status}`}>{statusLabel(project.status)}</span></header><h3>{project.title}</h3><p>{project.description}</p><div className="project-proof-line"><span>CURRENT PROOF</span><strong>{milestone ? `${milestone.title} · ${statusLabel(milestone.status)}` : "Lifecycle complete"}</strong></div><footer><span>{formatAtomicAmount(project.depositedAtomic, project.assetDecimals)} / {formatAtomicAmount(project.goalAtomic, project.assetDecimals)} {project.assetCode}</span><span>#{project.id} →</span></footer></button>; })}</div>}
-      </section>
+      </section>}
     </>}
     <CreateImpactProjectDialog open={showCreate} address={address} onClose={() => setShowCreate(false)} onCreated={() => void load()} runMutation={runMutation} />
   </div>;
