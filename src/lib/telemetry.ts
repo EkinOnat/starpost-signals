@@ -2,6 +2,11 @@ import { APP_RELEASE, INDEXER_URL } from "../config";
 
 export type ProductEvent =
   | "onboarding_started"
+  | "onboarding_role_selected"
+  | "onboarding_wallet_ready"
+  | "onboarding_action_started"
+  | "onboarding_action_confirmed"
+  | "feedback_opened"
   | "wallet_connection_attempted"
   | "wallet_connected"
   | "wallet_connection_failed"
@@ -15,8 +20,7 @@ export type ProductEvent =
   | "milestone_vote_confirmed"
   | "dispute_opened"
   | "payout_confirmed"
-  | "refund_confirmed"
-  | "feedback_submitted";
+  | "refund_confirmed";
 
 export function trackProductEvent(event: ProductEvent) {
   if (!INDEXER_URL || navigator.doNotTrack === "1") return;

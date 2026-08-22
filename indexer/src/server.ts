@@ -15,6 +15,11 @@ type ServerOptions = {
 
 const ANALYTICS_EVENTS = new Set([
   "onboarding_started",
+  "onboarding_role_selected",
+  "onboarding_wallet_ready",
+  "onboarding_action_started",
+  "onboarding_action_confirmed",
+  "feedback_opened",
   "wallet_connection_attempted",
   "wallet_connected",
   "wallet_connection_failed",
@@ -29,7 +34,6 @@ const ANALYTICS_EVENTS = new Set([
   "dispute_opened",
   "payout_confirmed",
   "refund_confirmed",
-  "feedback_submitted",
 ]);
 
 function json(response: ServerResponse, status: number, body: unknown) {
