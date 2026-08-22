@@ -64,9 +64,26 @@ export async function readResults(): Promise<PollResults> {
 
 export async function readXlmBalance(address: string): Promise<number> {
   if (import.meta.env.MODE === "e2e") return 5_000;
-  const account = await horizonServer.loadAccount(address);
-  const native = account.balances.find((balance) => balance.asset_type === "native");
-  return native ? Number(native.balance) : 0;
+  try {
+    const account = await horizonServer.loadAccount(address);
+    const native = account.balances.find((balance) => balance.asset_type === "native");
+    return native ? Number(native.balance) : 0;
+  } catch (cause) {
+    const status = (cause as { response?: { status?: number }; status?: number }).response?.status
+      ?? (cause as { status?: number }).status;
+    if (status === 404) return 0;
+    throw cause;
+  }
+}
+
+export async function fundTestnetAccount(address: string): Promise<number> {
+  if (import.meta.env.MODE === "e2e") return 10_000;
+  const response = await fetch(`https://friendbot.stellar.org/?addr=${encodeURIComponent(address)}`);
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`FRIENDBOT_FAILED:${response.status}:${detail.slice(0, 180)}`);
+  }
+  return readXlmBalance(address);
 }
 
 export async function submitVote(
@@ -180,6 +197,14 @@ export function friendlyError(error: unknown): FriendlyError {
       code: "INSUFFICIENT_BALANCE",
       title: "Not enough Testnet XLM",
       message: "Keep at least 1.5 XLM available for the account reserve and contract transaction fee, then try again.",
+    };
+  }
+
+  if (message.includes("friendbot_failed")) {
+    return {
+      code: "NETWORK_ERROR",
+      title: "Friendbot could not fund this account",
+      message: "Friendbot only funds eligible Stellar Testnet accounts. Refresh the balance or try again after the service recovers.",
     };
   }
 
