@@ -22,6 +22,21 @@ const REQUIRED_FIELDS = [
 ];
 
 const ROLES = new Set(["supporter", "contributor", "creator", "reviewer"]);
+const ACTIONS = new Set([
+  "signal_vote",
+  "grant_created",
+  "grant_contribution",
+  "milestone_vote",
+  "project_created",
+  "role_accepted",
+  "impact_contribution",
+  "evidence_submitted",
+  "reviewer_attestation",
+  "contributor_vote",
+  "arbitration_vote",
+  "payout_released",
+  "refund_claimed",
+]);
 const REUSE = new Set(["yes", "no", "maybe"]);
 const TRUE_VALUES = new Set(["true", "yes", "y", "1", "checked"]);
 
@@ -108,6 +123,7 @@ export function validateCohortRows(rows, options) {
     else if (transactions.has(hash)) errors.push("duplicate transaction hash");
     if (!approvedContracts.has(String(row.contract_id ?? "").trim())) errors.push("contract is not approved");
     if (!ROLES.has(String(row.role ?? "").trim().toLowerCase())) errors.push("invalid role");
+    if (!ACTIONS.has(String(row.action ?? "").trim().toLowerCase())) errors.push("invalid action");
     for (const field of ["overall_rating", "wallet_ease", "flow_clarity", "milestone_understanding", "payout_trust"]) {
       if (!rating(row[field])) errors.push(`${field} must be an integer from 1 to 5`);
     }

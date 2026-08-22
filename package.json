@@ -14,6 +14,8 @@
     "test:indexer": "vitest run indexer",
     "test:e2e": "playwright test",
     "verify:users": "node scripts/verify-user-interactions.mjs",
+    "test:cohort": "node --test scripts/level5-cohort.test.mjs",
+    "verify:level5": "node scripts/verify-level5-cohort.mjs",
     "indexer": "tsx indexer/src/main.ts",
     "preview": "vite preview"
   },
