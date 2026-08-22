@@ -46,8 +46,7 @@ At least ten participants must complete actions beyond the Signals vote. Across 
 Track aggregate events only:
 
 ```text
-onboarding_started
-→ onboarding_role_selected
+onboarding_role_selected
 → onboarding_wallet_ready
 → onboarding_action_started
 → onboarding_action_confirmed
@@ -65,4 +64,3 @@ The private response sheet supplies the actual form-completion count. Invite par
 - **Rejected signature:** nothing was submitted; review and retry when ready.
 - **Pending timeout:** preserve the hash and check Explorer. Do not submit the form until RPC reports success.
 - **Already voted:** choose a deeper role/action or use a genuinely new participant wallet; never create a duplicate record.
-

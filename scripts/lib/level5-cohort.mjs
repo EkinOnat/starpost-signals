@@ -114,13 +114,22 @@ export function validateCohortRows(rows, options) {
     for (const field of REQUIRED_FIELDS) if (!String(row[field] ?? "").trim()) errors.push(`missing ${field}`);
     const email = normalizedEmail(row.email);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("invalid email");
-    else if (emails.has(email)) errors.push("duplicate email");
+    else {
+      if (emails.has(email)) errors.push("duplicate email");
+      emails.add(email);
+    }
     const wallet = String(row.wallet_address ?? "").trim();
     if (!isValidAddress(wallet)) errors.push("invalid Stellar public address");
-    else if (wallets.has(wallet)) errors.push("duplicate wallet address");
+    else {
+      if (wallets.has(wallet)) errors.push("duplicate wallet address");
+      wallets.add(wallet);
+    }
     const hash = String(row.transaction_hash ?? "").trim().toLowerCase();
     if (!/^[0-9a-f]{64}$/.test(hash)) errors.push("invalid transaction hash");
-    else if (transactions.has(hash)) errors.push("duplicate transaction hash");
+    else {
+      if (transactions.has(hash)) errors.push("duplicate transaction hash");
+      transactions.add(hash);
+    }
     if (!approvedContracts.has(String(row.contract_id ?? "").trim())) errors.push("contract is not approved");
     if (!ROLES.has(String(row.role ?? "").trim().toLowerCase())) errors.push("invalid role");
     if (!ACTIONS.has(String(row.action ?? "").trim().toLowerCase())) errors.push("invalid action");
@@ -135,9 +144,6 @@ export function validateCohortRows(rows, options) {
 
     if (errors.length) failures.push({ participant, row: index + 2, errors });
     else {
-      emails.add(email);
-      wallets.add(wallet);
-      transactions.add(hash);
       valid.push({ participant, row: { ...row, email, wallet_address: wallet, transaction_hash: hash } });
     }
   }

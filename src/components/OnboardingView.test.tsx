@@ -1,8 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createOnboardingProgress, type OnboardingProgress } from "../domain/onboarding";
 import type { TransactionState } from "../types";
 import { OnboardingView } from "./OnboardingView";
+
+const telemetry = vi.hoisted(() => ({ trackProductEvent: vi.fn() }));
+vi.mock("../lib/telemetry", () => telemetry);
 
 const idle: TransactionState = { stage: "idle", hash: null, label: "", error: null };
 
@@ -26,12 +29,29 @@ function props(progress: OnboardingProgress) {
 }
 
 describe("guided onboarding", () => {
+  beforeEach(() => telemetry.trackProductEvent.mockClear());
+
   it("offers four explicit community personas", () => {
     const input = props(createOnboardingProgress());
     render(<OnboardingView {...input} />);
     expect(screen.getAllByRole("radio")).toHaveLength(4);
     fireEvent.click(screen.getByRole("radio", { name: /contributor/i }));
     expect(input.onChooseRole).toHaveBeenCalledWith("contributor");
+  });
+
+  it("counts only the first persona selection in a journey", () => {
+    const initial = props(createOnboardingProgress());
+    const view = render(<OnboardingView {...initial} />);
+    fireEvent.click(screen.getByRole("radio", { name: /contributor/i }));
+
+    const changed = props({ ...createOnboardingProgress(), role: "contributor" });
+    view.rerender(<OnboardingView {...changed} />);
+    fireEvent.click(screen.getByRole("radio", { name: /reviewer/i }));
+
+    expect(initial.onChooseRole).toHaveBeenCalledWith("contributor");
+    expect(changed.onChooseRole).toHaveBeenCalledWith("reviewer");
+    expect(telemetry.trackProductEvent).toHaveBeenCalledOnce();
+    expect(telemetry.trackProductEvent).toHaveBeenCalledWith("onboarding_role_selected");
   });
 
   it("connects a wallet before advancing to Testnet readiness", async () => {

@@ -30,10 +30,10 @@ Calculate these values from aggregate metrics for one clearly labeled release/da
 
 | Metric | Definition |
 | --- | --- |
-| Persona selection | `onboarding_role_selected / onboarding_started` |
-| Wallet readiness | `onboarding_wallet_ready / onboarding_started` |
+| Persona selections | `onboarding_role_selected` |
+| Wallet readiness | `onboarding_wallet_ready / onboarding_role_selected` |
 | Action start | `onboarding_action_started / onboarding_wallet_ready` |
-| Confirmed activation | `onboarding_action_confirmed / onboarding_started` |
+| Confirmed activation | `onboarding_action_confirmed / onboarding_role_selected` |
 | Feedback handoff | `feedback_opened / onboarding_action_confirmed` |
 | Form completion | Qualified private form records divided by `feedback_opened` |
 | Seven-day repeat activity | Qualified users with a second distinct verified transaction divided by 50 |
@@ -61,4 +61,3 @@ Redact browser account details, raw form responses, emails, names, unconsented w
 - Preserve pending hashes without classifying them as success or failure prematurely.
 - Roll back the frontend if activation falls because of a release regression; do not change deployed contracts for a presentation deadline.
 - Keep eligible refunds and direct contract reads available when the indexer is degraded.
-

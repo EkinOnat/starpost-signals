@@ -1,7 +1,6 @@
 import { APP_RELEASE, INDEXER_URL } from "../config";
 
 export type ProductEvent =
-  | "onboarding_started"
   | "onboarding_role_selected"
   | "onboarding_wallet_ready"
   | "onboarding_action_started"

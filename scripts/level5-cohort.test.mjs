@@ -56,6 +56,17 @@ describe("Level 5 cohort evidence", () => {
     assert.deepEqual(result.failures[0].errors, ["duplicate email", "duplicate wallet address", "duplicate transaction hash"]);
   });
 
+  it("reserves identity and transaction evidence from an invalid earlier row", () => {
+    const result = validateCohortRows([
+      record({ consent_verification: "false" }),
+      record({ name: "Second Person" }),
+    ], { ...options, minimum: 2 });
+
+    assert.equal(result.locallyValid, 0);
+    assert.ok(result.failures[0].errors.includes("verification consent is required"));
+    assert.deepEqual(result.failures[1].errors, ["duplicate email", "duplicate wallet address", "duplicate transaction hash"]);
+  });
+
   it("rejects malformed ratings, unapproved contracts, and missing consent", () => {
     const result = validateCohortRows([record({ overall_rating: "6", contract_id: "COTHER", consent_verification: "false" })], options);
     assert.ok(result.failures[0].errors.includes("contract is not approved"));

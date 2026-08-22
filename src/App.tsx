@@ -154,9 +154,6 @@ export default function App() {
   }
 
   function openOnboarding() {
-    if (onboarding.progress.step === "welcome" && onboarding.progress.completedSteps.length === 0) {
-      trackProductEvent("onboarding_started");
-    }
     setView("onboarding");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

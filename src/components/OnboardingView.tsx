@@ -195,6 +195,12 @@ function FeedbackStep({ progress, onRestart }: Pick<OnboardingViewProps, "progre
 
 export function OnboardingView(props: OnboardingViewProps) {
   const { progress } = props;
+  function chooseRole(role: OnboardingRole) {
+    const wasUnselected = progress.role === null;
+    props.onChooseRole(role);
+    if (wasUnselected) trackProductEvent("onboarding_role_selected");
+  }
+
   return (
     <section className="onboarding-view" aria-labelledby="onboarding-title">
       <header className="onboarding-hero">
@@ -204,7 +210,7 @@ export function OnboardingView(props: OnboardingViewProps) {
       <StepRail current={progress.step} />
       <div className="onboarding-stage">
         {progress.step !== "welcome" && <button className="onboarding-back" type="button" onClick={props.onBack}>← Back</button>}
-        {progress.step === "welcome" && <WelcomeStep progress={progress} onChooseRole={(role) => { props.onChooseRole(role); trackProductEvent("onboarding_role_selected"); }} onContinue={() => props.onMove("welcome", "wallet")} />}
+        {progress.step === "welcome" && <WelcomeStep progress={progress} onChooseRole={chooseRole} onContinue={() => props.onMove("welcome", "wallet")} />}
         {progress.step === "wallet" && <WalletStep address={props.address} walletName={props.walletName} connecting={props.connecting} onConnect={props.onConnect} onContinue={() => props.onMove("wallet", "testnet")} />}
         {progress.step === "testnet" && <TestnetStep address={props.address} balance={props.balance} funding={props.funding} onFund={props.onFund} onContinue={() => props.onMove("testnet", "action")} />}
         {progress.step === "action" && <ActionStep progress={progress} transaction={props.transaction} onNavigate={props.onNavigate} />}
