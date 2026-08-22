@@ -18,6 +18,108 @@ Starpost Signals is a production-style community coordination dApp on Stellar Te
 
 **Level 4 Impact Escrow V1:** [`CAB4Y37SZ3XUYG3OMGQQECXTE5IYQXXI23UFF2V4RBDV76AIHGMGK3PJ`](https://stellar.expert/explorer/testnet/contract/CAB4Y37SZ3XUYG3OMGQQECXTE5IYQXXI23UFF2V4RBDV76AIHGMGK3PJ)
 
+## Level 5: Growth, guided onboarding, and ecosystem presentation
+
+Level 5 adds a six-step onboarding journey, four role-specific paths, wallet/Testnet readiness, Friendbot funding, confirmed-transaction proof handoff, privacy-safe aggregate funnel events, and a verifier for the new 50-person campaign. It reuses the deployed Level 4 Registry and Escrow contracts; onboarding and analytics cannot authorize a financial state transition.
+
+**Release status:** the implementation is complete on `codex/level5-growth`. The current live URL remains the Level 4 baseline until this branch passes review, is merged, and is deployed. Authentic recruitment, two feedback-driven releases, final analytics captures, and the recorded walkthrough intentionally remain open.
+
+### Level 5 package
+
+- [Development plan and delivery gates](docs/level5/DEVELOPMENT_PLAN.md)
+- [User onboarding and 10 + 20 + 20 growth playbook](docs/level5/USER_ONBOARDING.md)
+- [Google Form and private export specification](docs/level5/FORM_SPECIFICATION.md)
+- [Privacy and public evidence policy](docs/level5/PRIVACY_AND_EVIDENCE.md)
+- [Analytics and production indexer runbook](docs/level5/ANALYTICS_AND_OPERATIONS.md)
+- [Feedback prioritization and iteration ledger](docs/level5/FEEDBACK_ITERATION.md)
+- [Sanitized feedback workbook](docs/level5/evidence/starpost-level5-feedback-sanitized.xlsx) — empty public template with `Summary`, `Sanitized Responses`, and `Feedback Themes`; it contains no names, emails, or invented users
+- [Editable 12-slide pitch deck](docs/level5/pitch/starpost-signals-level5-blue-belt.pptx) and [PDF companion](docs/level5/pitch/starpost-signals-level5-blue-belt.pdf)
+- [6:45 narrated demo script and recording safeguards](docs/level5/DEMO_SCRIPT.md)
+- [Final submission checklist](docs/level5/SUBMISSION_CHECKLIST.md)
+
+The raw Google Sheet and Excel export must remain access-controlled because they connect name and email to public wallet activity. A restricted judge-verification URL will be added only after the project owner creates the authenticated Form/Sheet and confirms its sharing policy; it must never be replaced with a public raw export.
+
+### Guided onboarding
+
+The new **Start** view supports supporter/voter, contributor, project creator, and reviewer personas. It explains Testnet and public-wallet consent, checks wallet availability, unlock state, supported wallet, network, funding, and XLM balance, then routes the participant to an existing real action. Progress is stored under a versioned local-storage key without name or email and safely resets when corrupt or unsupported.
+
+After RPC-confirmed success, the receipt preserves the wallet, action, transaction hash, and Stellar Expert link. `VITE_FEEDBACK_FORM_URL` opens the external Form; when it is absent, the receipt remains available and the interface displays a safe configuration message. The app never claims an external Form was submitted.
+
+### Privacy-safe funnel
+
+The indexer accepts only these Level 5 aggregate event names:
+
+```text
+onboarding_role_selected
+onboarding_wallet_ready
+onboarding_action_started
+onboarding_action_confirmed
+feedback_opened
+```
+
+Do Not Track disables the call. The service records only event name, release, count, and last-seen time—never wallet, hash, form answer, browser identifier, or free text. Telemetry and indexer failures cannot block a transaction.
+
+### Verified cohort status
+
+| Evidence | Level 4 baseline | New Level 5 cohort |
+|---|---:|---:|
+| Independent users | 10 | **0 / 50 — campaign pending** |
+| Unique successful transactions | 10 | **0 / 50 — campaign pending** |
+| Deeper lifecycle actions | existing demonstration lifecycle | **0 / 10 — campaign pending** |
+| Seven-day repeat activity | not a Level 4 gate | **pending measurement** |
+| Valid feedback-driven releases | not counted for Level 5 | **0 / 2 — authentic feedback pending** |
+
+The ten Level 4 users are baseline evidence and do not count toward Level 5. A Level 5 participant qualifies only with a unique real person, private email, wallet, valid Form record, explicit consent, and at least one successful transaction against an approved Starpost contract.
+
+Run the private verifier outside the public repository:
+
+```text
+npm run verify:level5 -- <private-raw.csv> <public-output-directory>
+```
+
+It rejects duplicate emails, wallets, and hashes; malformed records; missing consent; RPC/Horizon failures; unrelated contracts; missing action events; and actor/source mismatches. Its public JSON and sanitized CSV contain pass/fail reasons and Explorer links without names or emails.
+
+### Feedback iteration record
+
+The following pre-campaign work makes authentic feedback measurable; it does **not** count as either required Level 5 feedback release.
+
+| Input or risk | Implemented preparation | Result | Commit |
+|---|---|---|---|
+| First-time users need role context | Four personas and a six-step guided journey | Each role reaches the existing real action without duplicated transaction logic | [`b47ec64`](https://github.com/EkinOnat/starpost-signals/commit/b47ec64) |
+| New Testnet accounts may be unfunded | Readiness-aware Friendbot funding | A Horizon 404 becomes an actionable zero-balance state instead of a dead end | [`60be16f`](https://github.com/EkinOnat/starpost-signals/commit/60be16f) |
+| Evidence must follow confirmed success | RPC-confirmed receipt and Form handoff | Wallet, action, hash, and Explorer proof remain copyable even without Form configuration | [`f8884d3`](https://github.com/EkinOnat/starpost-signals/commit/f8884d3) |
+| Growth data must avoid wallet profiling | Aggregate allowlisted events | Funnel measurement respects Do Not Track and stores no personal or transaction properties | [`52349e7`](https://github.com/EkinOnat/starpost-signals/commit/52349e7) |
+| Public evidence must exclude invalid users and PII | Private-input cohort verifier | Duplicate, failed, unrelated, actor-mismatched, or non-consented records fail deterministically | [`39046a8`](https://github.com/EkinOnat/starpost-signals/commit/39046a8) |
+| Wave 1 authentic feedback | **Pending** | Add theme, before/after result, implementation, and direct commit after the 10-user gate | pending |
+| Wave 2 authentic feedback | **Pending** | Add the second qualifying theme and direct commit after the 20-user gate | pending |
+
+### Growth strategy and next roadmap
+
+1. **Wave 1 — 10 users:** fix every transaction/security blocker and the most repeated usability problem.
+2. **Wave 2 — 20 users:** compare funnel/rating changes and ship the next deterministic priority.
+3. **Wave 3 — 20 users:** validate the final release, replace invalid records, and close at exactly 50 verified new participants.
+4. Verify at least ten deeper actions and one complete creator/reviewer/contributor approval and payout lifecycle.
+5. Measure distinct repeat transactions after seven days and publish the real result, including zero.
+6. After the campaign, publish dated analytics/transaction screenshots, sanitized evidence, two feedback commits, public deck/video URLs, and the final requirement matrix.
+
+### Level 5 requirement matrix
+
+| Requirement | Current evidence | Status |
+|---|---|---|
+| Public repository and 20+ new meaningful commits | `codex/level5-growth` contains at least 24 cohesive Level 5 commits after `feec630` | Ready to push/review |
+| Live application | Existing Level 4 Vercel deployment | Level 5 deployment pending merge |
+| Guided onboarding and improved UX | Role guidance, readiness, resume/restart/back/dismiss, confirmation receipt, mobile styles, tests | Implemented |
+| Production analytics and public indexer | Aggregate events and deployment runbook | Public service verification pending |
+| Google Form and restricted raw source | Exact 19-field specification | Authenticated creation/share link pending owner sign-in |
+| Sanitized Excel workbook | Repository workbook template | Implemented; authentic data pending |
+| 50 new users and transactions | Verifier and three-wave playbook | 0/50; real recruitment required |
+| Two feedback-driven improvements | Deterministic ledger and release gates | 0/2; authentic Wave 1/2 data required |
+| Pitch deck / PPT | 12-slide `.pptx` and PDF with speaker-note sources | Implemented; public view URL pending |
+| Demo video | Timed script and safety checklist | Authentic recording/public URL pending |
+| Analytics and transaction screenshots | Evidence requirements documented | Final campaign captures pending |
+
+Do not mark the monthly submission complete while any pending row remains. See the [Level 5 checklist](docs/level5/SUBMISSION_CHECKLIST.md) for the release owner’s final sign-off.
+
 ## Level 4: Proof-to-Payout
 
 The additive Level 4 implementation extends the product to **Signal → Fund → Prove → Approve → Payout**. It includes versioned Impact Registry V1 and Impact Escrow V1 contracts, independent reviewer/arbitrator thresholds, content-addressed evidence, bounded contributor voting/disputes, exact milestone release, terminal refunds, a public mobile workflow, and a hash-verifying evidence/event service.
