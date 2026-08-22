@@ -122,9 +122,10 @@ function TestnetStep({ address, balance, funding, onFund, onContinue }: Pick<Onb
 function ActionStep({ progress, transaction, onNavigate }: Pick<OnboardingViewProps, "progress" | "transaction" | "onNavigate">) {
   const guidance = progress.role ? ROLE_GUIDANCE[progress.role] : null;
   if (!guidance) return null;
+  const destination = guidance.destination;
   function begin() {
     trackProductEvent("onboarding_action_started");
-    onNavigate(guidance.destination);
+    onNavigate(destination);
   }
   const failure = transaction.stage === "failed" || transaction.stage === "timed_out";
   return (
