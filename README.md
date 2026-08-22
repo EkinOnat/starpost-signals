@@ -106,7 +106,7 @@ The following pre-campaign work makes authentic feedback measurable; it does **n
 
 | Requirement | Current evidence | Status |
 |---|---|---|
-| Public repository and 20+ new meaningful commits | `codex/level5-growth` contains 24 cohesive Level 5 commits after `feec630` | Ready to push/review |
+| Public repository and 20+ new meaningful commits | `codex/level5-growth` contains at least 24 cohesive Level 5 commits after `feec630` | Ready to push/review |
 | Live application | Existing Level 4 Vercel deployment | Level 5 deployment pending merge |
 | Guided onboarding and improved UX | Role guidance, readiness, resume/restart/back/dismiss, confirmation receipt, mobile styles, tests | Implemented |
 | Production analytics and public indexer | Aggregate events and deployment runbook | Public service verification pending |

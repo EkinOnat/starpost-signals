@@ -21,8 +21,8 @@ test("guides a first-time supporter from wallet readiness to confirmed proof", a
   await expect(page.getByRole("heading", { name: /choose how you want to help/i })).toBeVisible();
   await page.getByRole("radio", { name: /supporter/i }).click();
   await page.getByRole("button", { name: /continue to wallet/i }).click();
-  await page.getByRole("button", { name: /connect wallet/i }).click();
-  await expect(page.getByText("5,000.00 XLM")).toBeVisible();
+  await page.getByRole("main").getByRole("button", { name: /connect wallet/i }).click();
+  await expect(page.getByText("5000.00 XLM")).toBeVisible();
   await page.getByRole("button", { name: /choose an action/i }).click();
   await page.getByRole("button", { name: /open signals/i }).click();
   await page.getByRole("button", { name: /payments/i }).first().click();
