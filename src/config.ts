@@ -34,6 +34,8 @@ export const APP_RELEASE = (import.meta.env.VITE_APP_RELEASE ?? "development").t
 
 export const INDEXER_URL = (import.meta.env.VITE_INDEXER_URL ?? "").replace(/\/$/, "");
 
+export const FEEDBACK_FORM_URL = (import.meta.env.VITE_FEEDBACK_FORM_URL ?? "").trim();
+
 export const GRANTS_ENABLED = Boolean(REGISTRY_CONTRACT_ID && ESCROW_CONTRACT_ID);
 export const IMPACT_ENABLED = Boolean(
   IMPACT_REGISTRY_CONTRACT_ID && IMPACT_ESCROW_CONTRACT_ID,
