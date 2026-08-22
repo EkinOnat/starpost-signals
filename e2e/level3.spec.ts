@@ -14,6 +14,25 @@ test("navigates the responsive Signals, Grants, and Activity views with a mocked
   await expect(page.getByText("10 VERIFIED EVENTS")).toBeVisible();
 });
 
+test("guides a first-time supporter from wallet readiness to confirmed proof", async ({ page }) => {
+  await page.goto("/");
+  const mobile = page.getByRole("navigation", { name: "Mobile navigation" });
+  await mobile.getByRole("button", { name: /start/i }).click();
+  await expect(page.getByRole("heading", { name: /choose how you want to help/i })).toBeVisible();
+  await page.getByRole("radio", { name: /supporter/i }).click();
+  await page.getByRole("button", { name: /continue to wallet/i }).click();
+  await page.getByRole("button", { name: /connect wallet/i }).click();
+  await expect(page.getByText("5,000.00 XLM")).toBeVisible();
+  await page.getByRole("button", { name: /choose an action/i }).click();
+  await page.getByRole("button", { name: /open signals/i }).click();
+  await page.getByRole("button", { name: /payments/i }).first().click();
+  await page.getByRole("button", { name: /cast this signal/i }).click();
+  await expect(page.getByText("Confirmed by Stellar RPC", { exact: false })).toBeVisible();
+  await mobile.getByRole("button", { name: /start/i }).click();
+  await expect(page.getByRole("heading", { name: /confirmed by stellar rpc/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /inspect transaction/i })).toBeVisible();
+});
+
 test("reads verified Level 4 deployment proof without fabricated projects", async ({ page }) => {
   await page.goto("/");
   const mobile = page.getByRole("navigation", { name: "Mobile navigation" });
